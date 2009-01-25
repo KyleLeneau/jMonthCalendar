@@ -28,8 +28,8 @@
 			onMonthChanging: function(dateIn) { return true; },
 			onMonthChanged: function(dateIn) { return true; },
 			onEventBlockClick: function(event) { return true; },
-			onEventBlockOver: function(event) { alert("block over"); return true; },
-			onEventBlockOut: function(event) { alert("block out"); return true; },
+			onEventBlockOver: function(event) { return true; },
+			onEventBlockOut: function(event) { return true; },
 			locale: {
 				days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 				daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -248,8 +248,7 @@
 					
 					var event = jQuery('<div class="Event"></div>');					
 					event.click(function() { defaults.onEventBlockClick(ev); });
-					event.mouseover(function() { defaults.onEventBlockOver(ev); });
-					event.mouseout(function() { defaults.onEventBlockOut(ev); });
+					event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
 					
 					var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
 					
