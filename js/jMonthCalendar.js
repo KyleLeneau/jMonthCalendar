@@ -121,6 +121,17 @@
 			var time = now - then;
 			return Math.floor(time / 24*60*60*1000);
 		};
+		Date.prototype.GetJSONDate = function(jsonDateString) {
+			//check conditions for different types of accepted dates
+			
+			//ISO
+			
+			//New constructor literal
+			
+			//Etc
+			
+			return this.tmpDate;
+		};
 	}
 	
 	jQuery.J.DrawCalendar = function(dateIn){
@@ -243,10 +254,15 @@
 			jQuery.each(calendarEvents, function(){
 				//Get the events that are in the month displayed.
 				var ev = this;
+				//Date Parse the JSON to create a new Date to work with here
+				
+				
 				if ((ev.Date >= _beginDate) && (ev.Date <= _endDate)) {
 					var cell = jQuery("#" + getDateId(ev.Date), jQuery(ids.container));
+					var event = jQuery('<div class="Event"></div>');
 					
-					var event = jQuery('<div class="Event"></div>');					
+					if(ev.CssClass) { event.addClass(ev.CssClass) }
+					
 					event.click(function() { defaults.onEventBlockClick(ev); });
 					event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
 					

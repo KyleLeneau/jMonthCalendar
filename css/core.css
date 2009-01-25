@@ -23,3 +23,4 @@ a { font-size:11px; }
 #jMonthCalendar .Event { font-size:12px; padding:4px; background-color:#C0D0FF; margin-bottom:1px; -moz-border-radius:0 8px 8px 8px; border:solid 1px #000; cursor:pointer; display:block; }
 .Event a { text-decoration:none; color:#000; }
 .Event a:hover { text-decoration:underline; }
+
