@@ -15,30 +15,39 @@
 			var options = {
 				onMonthChanged: function(dateIn) {
 					//this could be an Ajax call to the backend to get this months events
-					var events = [ 	{ EventID: 1, "Date": new Date(2009, 1, 1), "Title": "10:00 pm - EventTitle1", URL: "http://www.pertnearsandstone.com/Events/1" },
-									{ EventID: 2, "Date": new Date(2009, 1, 2), "Title": "9:30 pm - this is a much longer title", URL: "http://www.pertnearsandstone.com/Events/1" }
+					var events = [ 	{ "EventID": 1, "Date": new Date(2009, 1, 1), "Title": "10:00 pm - EventTitle1", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description" },
+									{ "EventID": 2, "Date": new Date(2009, 1, 2), "Title": "9:30 pm - this is a much longer title", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description" }
 					];
 					$.jMonthCalendar.ReplaceEventCollection(events);
+					return true;
+				},
+				onEventBlockOver: function(event) {
+					alert(event.Title + " - " + event.Description);
+					return true;
+				},
+				onEventBlockOut: function(event) {
 					return true;
 				}
 			};
 			
-			var events = [ 	{ EventID: 1, "Date": new Date(2009, 0, 1), "Title": "10:00 pm - EventTitle1", URL: "http://www.pertnearsandstone.com/Events/1" },
-							{ EventID: 2, "Date": new Date(2009, 0, 2), "Title": "9:30 pm - this is a much longer title", URL: "http://www.pertnearsandstone.com/Events/1" }
+			
+			
+			var events = [ 	{ "EventID": 1, "Date": new Date(2009, 0, 1), "Title": "10:00 pm - EventTitle1", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description" },
+							{ "EventID": 2, "Date": new Date(2009, 0, 2), "Title": "9:30 pm - this is a much longer title", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description" }
 			];
 			
 			var newoptions = { };
 			var newevents = [ ];
-			$.jMonthCalendar.Initialize(newoptions, newevents);
+			//$.jMonthCalendar.Initialize(newoptions, newevents);
 
 			
-			//$.jMonthCalendar.Initialize(options, events);
+			$.jMonthCalendar.Initialize(options, events);
 			
 			
 			
 			
-			var extraEvents = [	{ EventID: 1, "Date": new Date(2009, 0, 11), "Title": "10:00 pm - EventTitle1", URL: "http://www.pertnearsandstone.com/Events/1" },
-								{ EventID: 2, "Date": new Date(2009, 0, 20), "Title": "9:30 pm - this is a much longer title", URL: "http://www.pertnearsandstone.com/Events/1" }
+			var extraEvents = [	{ "EventID": 1, "Date": new Date(2009, 0, 11), "Title": "10:00 pm - EventTitle1", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description" },
+								{ "EventID": 2, "Date": new Date(2009, 0, 20), "Title": "9:30 pm - this is a much longer title", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description" }
 			];
 			
 			$("#Button").click(function() {					
