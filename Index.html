@@ -13,6 +13,7 @@
 	<style type="text/css" media="screen">
 		#jMonthCalendar .Meeting { background-color: #DDFFFF;}
 		#jMonthCalendar .Birthday { background-color: #DD00FF;}
+		#jMonthCalendar #Event_3 { background-color:#0000FF; }
 	</style>
 	
 	
@@ -21,8 +22,8 @@
 			var options = {
 				onMonthChanged: function(dateIn) {
 					//this could be an Ajax call to the backend to get this months events
-					var events = [ 	{ "EventID": 1, "Date": new Date(2009, 1, 1), "Title": "10:00 pm - EventTitle1", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description", "CssClass": "Birthday" },
-									{ "EventID": 2, "Date": new Date(2009, 1, 2), "Title": "9:30 pm - this is a much longer title", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description", "CssClass": "Meeting" }
+					var events = [ 	{ "EventID": 7, "Date": new Date(2009, 1, 1), "Title": "10:00 pm - EventTitle1", "URL": "#", "Description": "This is a sample event description", "CssClass": "Birthday" },
+									{ "EventID": 8, "Date": new Date(2009, 1, 2), "Title": "9:30 pm - this is a much longer title", "URL": "#", "Description": "This is a sample event description", "CssClass": "Meeting" }
 					];
 					$.jMonthCalendar.ReplaceEventCollection(events);
 					return true;
@@ -38,8 +39,9 @@
 			
 			
 			
-			var events = [ 	{ "EventID": 1, "Date": new Date(2009, 0, 1), "Title": "10:00 pm - EventTitle1", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description", "CssClass": "Birthday" },
-							{ "EventID": 2, "Date": new Date(2009, 0, 2), "Title": "9:30 pm - this is a much longer title", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description", "CssClass": "Meeting" }
+			var events = [ 	{ "EventID": 1, "Date": new Date(2009, 0, 1), "Title": "10:00 pm - EventTitle1", "URL": "#", "Description": "This is a sample event description", "CssClass": "Birthday" },
+							{ "EventID": 2, "Date": new Date(2009, 0, 2), "Title": "9:30 pm - this is a much longer title", "URL": "#", "Description": "This is a sample event description", "CssClass": "Meeting" },
+							{ "EventID": 3, "Date": new Date(2009, 0, 20), "Title": "9:30 pm - this is a much longer title", "URL": "#", "Description": "This is a sample event description", "CssClass": "Meeting" }
 			];
 			
 			var newoptions = { };
@@ -52,12 +54,16 @@
 			
 			
 			
-			var extraEvents = [	{ "EventID": 1, "Date": new Date(2009, 0, 11), "Title": "10:00 pm - EventTitle1", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description", "CssClass": "Birthday" },
-								{ "EventID": 2, "Date": new Date(2009, 0, 20), "Title": "9:30 pm - this is a much longer title", "URL": "http://www.pertnearsandstone.com/Events/1", "Description": "This is a sample event description", "CssClass": "Meeting" }
+			var extraEvents = [	{ "EventID": 5, "Date": new Date(2009, 0, 11), "Title": "10:00 pm - EventTitle1", "URL": "#", "Description": "This is a sample event description", "CssClass": "Birthday" },
+								{ "EventID": 6, "Date": new Date(2009, 0, 20), "Title": "9:30 pm - this is a much longer title", "URL": "#", "Description": "This is a sample event description", "CssClass": "Meeting" }
 			];
 			
 			$("#Button").click(function() {					
 				$.jMonthCalendar.AddEvents(extraEvents);
+			});
+			
+			$("#ChangeMonth").click(function() {
+				$.jMonthCalendar.ChangeMonth(new Date(2008, 4, 7));
 			});
         });
     </script>
@@ -68,6 +74,8 @@
 
 	<button id="Button">Add More Events</button>
 
+	<button id="ChangeMonth">Change Months May 2009</button>
+	
 	<script type="text/javascript">
 	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
