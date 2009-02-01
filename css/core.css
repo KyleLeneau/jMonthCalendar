@@ -3,17 +3,18 @@
 
 a { font-size:11px; }
         
+#jMonthCalendar { position:relative; }
 .MonthlyCalendar .MonthNavigation { border-bottom:solid 1px #ddd; clear:both; height:20px; padding:5px 10px 0 10px; }
 .MonthlyCalendar .MonthNavNext { width:10%; float:right; text-align:right; }
 .MonthlyCalendar .MonthNavPrev { width:10%; float:left; }
 .MonthlyCalendar .MonthName { width:80%; text-align:center; font-weight:bold; float:left; }
 
-.MonthlyCalendar { width:1000px; border:solid 1px #ddd; border-collapse:collapse; }
+.MonthlyCalendar { height:100%; width:100%; border:solid 1px #ddd; border-collapse:collapse; }
 .MonthlyCalendar #CalendarHead { width:100%; background:#F7F7F7 none repeat scroll 0 0; }
 .MonthlyCalendar #CalendarHead .DateHeader { width:14%; text-align:center; }
 
 .MonthlyCalendar #CalendarBody { }
-.DateBox { height:100px; vertical-align:top; border:solid 1px #ddd; }
+.DateBox { vertical-align:top; border:solid 1px #ddd; }
 .DateLabel { height:16px; width:100%; background:#F7F7F7 none repeat scroll 0 0; text-align:right; }
 .DateLabel a { cursor:pointer; padding:0 5px 2px; text-decoration:none; line-height:16px; }
 

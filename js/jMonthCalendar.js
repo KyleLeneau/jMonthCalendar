@@ -19,6 +19,10 @@
 	var _endDate;
 	var calendarEvents;
 	var defaults = {
+			height: 650,
+			width: 1000,
+			navHeight: 25,
+			labelHeight: 25,
 			firstDayOfWeek: 0,
 			navLinks: {
 				p:'Prev', 
@@ -168,13 +172,19 @@
 
 		//Build up the Header first
 		//  Navigation
-		var navRow = jQuery('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>');
+		var navRow = jQuery('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>').css({ 
+			"height" : defaults.navHeight 
+		});
+		
 		jQuery('.MonthNavigation', navRow).append(nextLink);
 		jQuery('.MonthNavigation', navRow).append(prevLink);
 		jQuery('.MonthNavigation', navRow).append(jQuery('<div class="MonthName"></div>').append(defaults.locale.months[d.getMonth()] + " " + d.getFullYear()));
 		
 		//  Days
-		var headRow = jQuery("<tr></tr>");
+		var headRow = jQuery("<tr></tr>").css({ 
+			"height" : defaults.labelHeight 
+		});
+		
 		for (var i=defaults.firstDayOfWeek; i<defaults.firstDayOfWeek+7; i++) {
 			var weekday = i%7;
 			var wordday = defaults.locale.days[weekday];
@@ -206,9 +216,15 @@
 		// Render calendar
 		//<td class=\"DateBox\"><div class=\"DateLabel\"><a href=\"#\">" + val + "</a></div></td>";
 		var rowCount = 0;
+		var rowHeight = (defaults.height - defaults.labelHeight - defaults.navHeight) / Math.ceil((maxDays + Math.abs(curDay)) / 7);
+		//alert("rowHeight=" + rowHeight);
+		
 		do {
 	  		var thisRow = jQuery("<tr></tr>");
-				
+			thisRow.css({
+				"height" : rowHeight + "px"
+			});
+			
 			for (var i=0; i<7; i++) {
 				var weekday = (defaults.firstDayOfWeek + i) % 7;
 				var atts = {'class':"DateBox" + (weekday == 0 || weekday == 6 ? ' Weekend ' : ''),
@@ -226,20 +242,23 @@
 					dayStr = curDay+1;
 					atts['class'] += ' Today';
 				}
-					
+				
 				thisRow.append(jQuery("<td></td>").attr(atts).append('<div class="DateLabel"><a href="#">' + _currentDate.getDate() + '</a></div>'));
 					
-				
 				curDay++;
-				rowCount++;
 				_currentDate.addDays(1);
 			}
-
+			
+			rowCount++;
 			tBody.append(thisRow);
 		} while (curDay < maxDays);
 
 
 		var a = jQuery(ids.container);
+		a.css({
+			"width" : defaults.width + "px",
+			"height" : defaults.height + "px"
+		});
 		var cal = jQuery('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>');
 		cal = cal.append(headRow, tBody);
 		
@@ -247,20 +266,25 @@
 		a.html(cal);
 		
 		a.fadeIn("normal");
+		
+		DrawEventsOnCalendar();
 	}
 	
 	var DrawEventsOnCalendar = function() {	
 		if (calendarEvents && calendarEvents.length > 0) {
 			jQuery.each(calendarEvents, function(){
+				var headHeight = defaults.labelHeight + defaults.navHeight;
+				
 				//Get the events that are in the month displayed.
 				var ev = this;
 				//Date Parse the JSON to create a new Date to work with here
 				
-				
 				if ((ev.Date >= _beginDate) && (ev.Date <= _endDate)) {
+					//check for multi day event
+					
 					var cell = jQuery("#" + getDateId(ev.Date), jQuery(ids.container));
 					var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>');
-					
+
 					if(ev.CssClass) { event.addClass(ev.CssClass) }
 					
 					event.click(function() { defaults.onEventBlockClick(ev); });
@@ -308,7 +332,6 @@
 		defaults.onMonthChanging(dateIn);
 		jQuery.J.DrawCalendar(dateIn);
 		defaults.onMonthChanged(dateIn);
-		DrawEventsOnCalendar();
 	}
 	
 	jQuery.J.Initialize = function(options, events) {
