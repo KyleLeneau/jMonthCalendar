@@ -284,7 +284,7 @@
 					
 					var cell = jQuery("#" + getDateId(ev.Date), jQuery(ids.container));
 					var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>');
-
+					
 					if(ev.CssClass) { event.addClass(ev.CssClass) }
 					
 					event.click(function() { defaults.onEventBlockClick(ev); });
