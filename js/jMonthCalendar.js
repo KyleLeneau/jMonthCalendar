@@ -72,6 +72,10 @@
 		Date.prototype.getDayName = function(fullName) {
 			return this[fullName ? 'days' : 'daysShort'][this.getDay()];
 		};
+		Date.prototype.getShortDate = function() {
+			this.setHours(0,0,0,0);
+			return this;
+		};
 		Date.prototype.toShortDateString = function() {
 			return (this.getMonth()+1) + "/" + this.getDate() + "/" + this.getFullYear();
 		};
@@ -272,17 +276,44 @@
 	
 	var DrawEventsOnCalendar = function() {	
 		if (calendarEvents && calendarEvents.length > 0) {
+			var headHeight = defaults.labelHeight + defaults.navHeight;
+			var dtLabelHeight = jQuery(".DateLabel:first", ids.container).outerHeight();
+			alert(dtLabelHeight);
+			
+			
 			jQuery.each(calendarEvents, function(){
-				var headHeight = defaults.labelHeight + defaults.navHeight;
-				
-				//Get the events that are in the month displayed.
 				var ev = this;
+					
+				
+				
 				//Date Parse the JSON to create a new Date to work with here
 				
-				if ((ev.Date >= _beginDate) && (ev.Date <= _endDate)) {
+				
+				//is the start date in range, put it on the calendar?
+				if(ev.StartDate && (ev.StartDate >= _beginDate) && (ev.StartDate <= _endDate)) {
+				
+				
+				}
+				
+				
+				//handle multi day range first
+				if(ev.StartDate && ev.EndDate && (ev.StartDate.getShortDate() <= ev.EndDate.getShortDate())) {
+					alert("multi");
+					alert("start is before end = good");
+				}
+				
+				//then handle single day events to be under multi day events.
+				
+				
+				
+				if (((ev.StartDate >= _beginDate) && (ev.StartDate <= _endDate)) && ((ev.EndDate >= _beginDate) && (ev.EndDate <= _endDate))) {
 					//check for multi day event
 					
-					var cell = jQuery("#" + getDateId(ev.Date), jQuery(ids.container));
+					var cell = jQuery("#" + getDateId(ev.StartDate), jQuery(ids.container));
+					var label = jQuery(".DateLabel", cell);
+					var pos = label.position();
+					alert("left=" + pos.left + " " + "top=" + pos.top);
+					
 					var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>');
 					
 					if(ev.CssClass) { event.addClass(ev.CssClass) }
