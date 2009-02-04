@@ -35,6 +35,7 @@
 			onEventBlockOver: function(event) { return true; },
 			onEventBlockOut: function(event) { return true; },
 			onDayLinkClick: function(date) { return true; },
+			onDayCellClick: function(date) { return true; },
 			locale: {
 				days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 				daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -52,6 +53,34 @@
 		var month = ((date.getMonth()+1)<10) ? "0" + (date.getMonth()+1) : (date.getMonth()+1);
 		var day = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate();
 		return "c_" + month + day + date.getFullYear();
+	};
+	var GetJSONDate = function(jsonDateString) {
+		//check conditions for different types of accepted dates
+		var tDt, k;
+
+		if (typeof jsonDateString == "string") {
+			//  "2008-12-28T00:00:00.0000000"
+			var isoReg = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).([0-9]{7})$/;
+			
+			//  "new Date(2009, 1, 1)"
+			//  "new Date(1230444000000)
+			var newReg = /^new/;
+			
+			//  "\/Date(1234418400000-0600)\/"
+			var stdReg = /^\\\/Date\(([0-9]{13})-([0-9]{4})\)\\\/$/;
+			
+			if (k = jsonDateString.match(isoReg)) {
+				tDt = new Date(k[1],k[2]-1,k[3]);
+			}
+			else if (k = jsonDateString.match(stdReg)) {
+				tDt = new Date(k[1]);
+			}
+			else if (k = jsonDateString.match(newReg)) {
+				tDt = eval('(' + jsonDateString + ')');
+			}
+		}
+		
+		return tDt;
 	};
 	jQuery.jMonthCalendar = jQuery.J = function() {};
 
@@ -129,17 +158,6 @@
 			var then = new Date(this.getFullYear(), 0, 0, 0, 0, 0);
 			var time = now - then;
 			return Math.floor(time / 24*60*60*1000);
-		};
-		Date.prototype.GetJSONDate = function(jsonDateString) {
-			//check conditions for different types of accepted dates
-			
-			//ISO
-			
-			//New constructor literal
-			
-			//Etc
-			
-			return this.tmpDate;
 		};
 	}
 	
@@ -248,7 +266,8 @@
 					atts['class'] += ' Today';
 				}
 				
-				thisRow.append(jQuery("<td></td>").attr(atts).append('<div class="DateLabel"><a href="#">' + _currentDate.getDate() + '</a></div>'));
+				var dayLink = jQuery('<a href="#">' + _currentDate.getDate() + '</a>');
+				thisRow.append(jQuery("<td></td>").attr(atts).append(jQuery('<div class="DateLabel"></div>').append(dayLink)));
 					
 				curDay++;
 				_currentDate.addDays(1);
@@ -259,18 +278,23 @@
 		} while (curDay < maxDays);
 
 
-		var a = jQuery(ids.container);
-		a.css({
-			"width" : defaults.width + "px",
-			"height" : defaults.height + "px"
-		});
-		var cal = jQuery('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>');
-		cal = cal.append(headRow, tBody);
+		var a = jQuery(ids.container).css({ "width" : defaults.width + "px", "height" : defaults.height + "px" });
+		var cal = jQuery('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>').append(headRow, tBody);
 		
 		a.hide();
-		a.html(cal);
-		
+		a.html(cal);		
 		a.fadeIn("normal");
+		
+		
+		//connect up the day links/cells
+		jQuery.each(jQuery("td", tBody), function() {
+			jQuery(this).click(function() { 
+				defaults.onDayCellClick(getDateFromId(jQuery(this).attr("id"))); 
+			});
+			jQuery("a", jQuery(this)).click(function() {
+				defaults.onDayLinkClick(getDateFromId(jQuery(this).attr("id")));
+			});
+		});
 		
 		DrawEventsOnCalendar();
 	}
@@ -279,57 +303,50 @@
 		if (calendarEvents && calendarEvents.length > 0) {
 			var headHeight = defaults.labelHeight + defaults.navHeight;
 			var dtLabelHeight = jQuery(".DateLabel:first", ids.container).outerHeight();
-			alert(dtLabelHeight);
 			
 			
 			jQuery.each(calendarEvents, function(){
-				var ev = this;
-					
-				
-				
+				var ev = this;				
 				//Date Parse the JSON to create a new Date to work with here
+				var sDt, eDt;
 				
+				if(ev.StartDate) {
+					if (typeof ev.StartDate == 'object' && ev.StartDate.getDate) { sDt = ev.StartDate; }
+					if (typeof ev.StartDate == 'string' && ev.StartDate.split) { sDt = GetJSONDate(ev.StartDate); }
+				} else {
+					return;  //no start date, no event.
+				}
+				alert("sDt = " + sDt);
 				
-				//is the start date in range, put it on the calendar?
-				if(ev.StartDate && (ev.StartDate >= _beginDate) && (ev.StartDate <= _endDate)) {
-				
-				
+				if(ev.EndDate) {
+					if (typeof ev.EndDate == 'object' && ev.EndDate.getDate) { eDt = ev.EndDate; }
+					if (typeof ev.EndDate == 'string' && ev.EndDate.split) { eDt = GetJSONDate(ev.EndDate); }
 				}
 				
 				
+				//is the start date in range, put it on the calendar?			
 				//handle multi day range first
-				if(ev.StartDate && ev.EndDate && (ev.StartDate.getShortDate() <= ev.EndDate.getShortDate())) {
-					alert("multi");
-					alert("start is before end = good");
+					
+				
+				if(sDt) {
+					if ((sDt >= _beginDate) && (sDt <= _endDate)) {					
+						var cell = jQuery("#" + getDateId(sDt), jQuery(ids.container));
+						var label = jQuery(".DateLabel", cell);
+						
+						var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
+						var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>').append(link);
+						
+						
+						if(ev.CssClass) { event.addClass(ev.CssClass) }
+						event.click(function() { defaults.onEventBlockClick(ev); });
+						event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
+						
+						
+						event.hide();
+						cell.append(event);
+						event.fadeIn("normal");
+					}
 				}
-				
-				//then handle single day events to be under multi day events.
-				
-				
-				
-				if (((ev.StartDate >= _beginDate) && (ev.StartDate <= _endDate)) && ((ev.EndDate >= _beginDate) && (ev.EndDate <= _endDate))) {
-					//check for multi day event
-					
-					var cell = jQuery("#" + getDateId(ev.StartDate), jQuery(ids.container));
-					var label = jQuery(".DateLabel", cell);
-					var pos = label.position();
-					alert("left=" + pos.left + " " + "top=" + pos.top);
-					
-					var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>');
-					
-					if(ev.CssClass) { event.addClass(ev.CssClass) }
-					
-					event.click(function() { defaults.onEventBlockClick(ev); });
-					event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
-					
-					var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
-					
-					event.append(link);
-					event.hide();
-					cell.append(event);
-					event.fadeIn("normal");
-				}
-				
 			});
 		}
 	}
