@@ -34,6 +34,7 @@
 			onEventBlockClick: function(event) { return true; },
 			onEventBlockOver: function(event) { return true; },
 			onEventBlockOut: function(event) { return true; },
+			onDayLinkClick: function(date) { return true; },
 			locale: {
 				days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 				daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
