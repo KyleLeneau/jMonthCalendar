@@ -20,7 +20,7 @@
 	var calendarEvents;
 	var defaults = {
 			height: 650,
-			width: 1000,
+			width: 980,
 			navHeight: 25,
 			labelHeight: 25,
 			firstDayOfWeek: 0,
@@ -45,6 +45,7 @@
 				weekMin: 'wk'
 			}
 		};
+	
 	var getDateFromId = function(dateIdString) {
 		//c_01012009		
 		return new Date(dateIdString.substring(6, 10), dateIdString.substring(2, 4)-1, dateIdString.substring(4, 6));
@@ -57,7 +58,6 @@
 	var GetJSONDate = function(jsonDateString) {
 		//check conditions for different types of accepted dates
 		var tDt, k;
-
 		if (typeof jsonDateString == "string") {
 			//  "2008-12-28T00:00:00.0000000"
 			var isoReg = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).([0-9]{7})$/;
@@ -78,8 +78,7 @@
 			else if (k = jsonDateString.match(newReg)) {
 				tDt = eval('(' + jsonDateString + ')');
 			}
-		}
-		
+		}		
 		return tDt;
 	};
 	jQuery.jMonthCalendar = jQuery.J = function() {};
@@ -189,7 +188,7 @@
 		});
 		
 		var todayLink = jQuery('<a href="" class="link-today">'+ defaults.navLinks.t +'</a>').click(function() {
-			jQuery.MonthCalendar.changeMonth(today, this);
+			jQuery.J.ChangeMonth(today);
 			return false;
 		});
 
@@ -313,10 +312,12 @@
 				if(ev.StartDate) {
 					if (typeof ev.StartDate == 'object' && ev.StartDate.getDate) { sDt = ev.StartDate; }
 					if (typeof ev.StartDate == 'string' && ev.StartDate.split) { sDt = GetJSONDate(ev.StartDate); }
+				} else if(ev.Date) {
+					if (typeof ev.Date == 'object' && ev.Date.getDate) { sDt = ev.Date; }
+					if (typeof ev.Date == 'string' && ev.Date.split) { sDt = GetJSONDate(ev.Date); }
 				} else {
-					return;  //no start date, no event.
+					return;  //no start date, or legacy date. no event.
 				}
-				alert("sDt = " + sDt);
 				
 				if(ev.EndDate) {
 					if (typeof ev.EndDate == 'object' && ev.EndDate.getDate) { eDt = ev.EndDate; }
