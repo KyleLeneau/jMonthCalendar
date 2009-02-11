@@ -5,9 +5,10 @@ a { font-size:11px; }
         
 #jMonthCalendar { position:relative; }
 .MonthlyCalendar .MonthNavigation { border-bottom:solid 1px #ddd; clear:both; height:20px; padding:5px 10px 0 10px; }
-.MonthlyCalendar .MonthNavNext { width:10%; float:right; text-align:right; }
-.MonthlyCalendar .MonthNavPrev { width:10%; float:left; }
-.MonthlyCalendar .MonthName { width:80%; text-align:center; font-weight:bold; float:left; }
+.MonthlyCalendar .MonthNavPrev, .MonthlyCalendar .MonthNavNext, .MonthlyCalendar .TodayLink { width:7%; float:left; }
+.MonthlyCalendar .YearNavNext, .MonthlyCalendar .YearNavPrev { width:10%; float:right; }
+.MonthlyCalendar .MonthName { width:59%; text-align:center; font-weight:bold; float:left; }
+
 
 .MonthlyCalendar { height:100%; width:100%; border:solid 1px #ddd; border-collapse:collapse; }
 .MonthlyCalendar #CalendarHead { width:100%; background:#F7F7F7 none repeat scroll 0 0; }
