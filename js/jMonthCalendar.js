@@ -325,19 +325,19 @@
 				//Date Parse the JSON to create a new Date to work with here
 				var sDt, eDt;
 				
-				if(ev.StartDate) {
-					if (typeof ev.StartDate == 'object' && ev.StartDate.getDate) { sDt = ev.StartDate; }
-					if (typeof ev.StartDate == 'string' && ev.StartDate.split) { sDt = GetJSONDate(ev.StartDate); }
-				} else if(ev.Date) {
+				if(ev.StartDateTime) {
+					if (typeof ev.StartDateTime == 'object' && ev.StartDateTime.getDate) { sDt = ev.StartDateTime; }
+					if (typeof ev.StartDateTime == 'string' && ev.StartDateTime.split) { sDt = GetJSONDate(ev.StartDateTime); }
+				} else if(ev.Date) { // DEPRECATED
 					if (typeof ev.Date == 'object' && ev.Date.getDate) { sDt = ev.Date; }
 					if (typeof ev.Date == 'string' && ev.Date.split) { sDt = GetJSONDate(ev.Date); }
 				} else {
 					return;  //no start date, or legacy date. no event.
 				}
 				
-				if(ev.EndDate) {
-					if (typeof ev.EndDate == 'object' && ev.EndDate.getDate) { eDt = ev.EndDate; }
-					if (typeof ev.EndDate == 'string' && ev.EndDate.split) { eDt = GetJSONDate(ev.EndDate); }
+				if(ev.EndDateTime) {
+					if (typeof ev.EndDateTime == 'object' && ev.EndDateTime.getDate) { eDt = ev.EndDateTime; }
+					if (typeof ev.EndDateTime == 'string' && ev.EndDateTime.split) { eDt = GetJSONDate(ev.EndDateTime); }
 				}
 				
 				
