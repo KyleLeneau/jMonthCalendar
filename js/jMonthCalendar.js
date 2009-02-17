@@ -24,6 +24,7 @@
 			navHeight: 25,
 			labelHeight: 25,
 			firstDayOfWeek: 0,
+			calendarStartDate:new Date(),
 			navLinks: {
 				p:'Prev', 
 				n:'Next', 
@@ -161,7 +162,7 @@
 	}
 	
 	jQuery.J.DrawCalendar = function(dateIn){
-		var today = new Date();
+		var today = defaults.calendarStartDate;
 		var d;
 		
 		if(dateIn == undefined) {
