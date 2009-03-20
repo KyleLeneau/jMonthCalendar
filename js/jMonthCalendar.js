@@ -61,8 +61,15 @@
 		//check conditions for different types of accepted dates
 		var tDt, k;
 		if (typeof jsonDateString == "string") {
+			
 			//  "2008-12-28T00:00:00.0000000"
-			var isoReg = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).([0-9]{7})$/;
+			var isoRegPlus = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).([0-9]{7})$/;
+			
+			//  "2008-12-28T00:00:00"
+			var isoReg = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})$/;
+		
+			//"2008-12-28"
+			var yyyyMMdd = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
 			
 			//  "new Date(2009, 1, 1)"
 			//  "new Date(1230444000000)
@@ -71,17 +78,22 @@
 			//  "\/Date(1234418400000-0600)\/"
 			var stdReg = /^\\\/Date\(([0-9]{13})-([0-9]{4})\)\\\/$/;
 			
-			if (k = jsonDateString.match(isoReg)) {
-				tDt = new Date(k[1],k[2]-1,k[3]);
+			if (k = jsonDateString.match(isoRegPlus)) {
+				return new Date(k[1],k[2]-1,k[3]);
+			} else if (k = jsonDateString.match(isoReg)) {
+				return new Date(k[1],k[2]-1,k[3]);
+			} else if (k = jsonDateString.match(yyyyMMdd)) {
+				return new Date(k[1],k[2]-1,k[3]);
 			}
-			else if (k = jsonDateString.match(stdReg)) {
-				tDt = new Date(k[1]);
+			
+			if (k = jsonDateString.match(stdReg)) {
+				return new Date(k[1]);
 			}
-			else if (k = jsonDateString.match(newReg)) {
-				tDt = eval('(' + jsonDateString + ')');
+			
+			if (k = jsonDateString.match(newReg)) {
+				return eval('(' + jsonDateString + ')');
 			}
-		}		
-		return tDt;
+		}
 	};
 	jQuery.jMonthCalendar = jQuery.J = function() {};
 
