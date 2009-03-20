@@ -32,6 +32,7 @@
 			},
 			onMonthChanging: function(dateIn) { return true; },
 			onMonthChanged: function(dateIn) { return true; },
+			onEventLinkClick: function(event) { return true; },
 			onEventBlockClick: function(event) { return true; },
 			onEventBlockOver: function(event) { return true; },
 			onEventBlockOut: function(event) { return true; },
@@ -304,11 +305,14 @@
 		
 		//connect up the day links/cells
 		jQuery.each(jQuery("td", tBody), function() {
-			jQuery(this).click(function() { 
-				defaults.onDayCellClick(getDateFromId(jQuery(this).attr("id"))); 
+			var dt = getDateFromId(jQuery(this).attr("id"));
+			jQuery(this).click(function(e) { 
+				defaults.onDayCellClick(dt);
+				e.stopPropagation();
 			});
-			jQuery("a", jQuery(this)).click(function() {
-				defaults.onDayLinkClick(getDateFromId(jQuery(this).attr("id")));
+			jQuery("a", jQuery(this)).click(function(e) {
+				defaults.onDayLinkClick(dt);
+				e.stopPropagation(); 
 			});
 		});
 		
@@ -352,11 +356,18 @@
 						var label = jQuery(".DateLabel", cell);
 						
 						var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
+						link.click(function(e) {
+							defaults.onEventLinkClick(ev);
+							e.stopPropagation();
+						});
 						var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>').append(link);
 						
 						
 						if(ev.CssClass) { event.addClass(ev.CssClass) }
-						event.click(function() { defaults.onEventBlockClick(ev); });
+						event.click(function(e) { 
+							defaults.onEventBlockClick(ev); 
+							e.stopPropagation(); 
+						});
 						event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
 						
 						
