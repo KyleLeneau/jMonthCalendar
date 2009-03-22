@@ -1,11 +1,10 @@
-/*
-* Title:  jMonthCalendar 1.0.0
+/*!
+* Title:  jMonthCalendar @VERSION
 * Dependencies:  jQuery 1.3.0 +
 * Author:  Kyle LeNeau
 * Email:  kyle.leneau@gmail.com
 * Project Hompage:  http://www.bytecyclist.com/projects/jmonthcalendar
 *
-* 1/15/2009
 */
 
 (function($) {

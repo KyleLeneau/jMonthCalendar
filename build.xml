@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<project name="jMonthCalendar" default="jmonthcalendar" basedir=".">
+
+	<!-- SETUP -->
+	<property name="version" value="1.2.1" />
+	<property name="src.dir" value="js" />
+	<property name="lib.dir" value="lib" />
+	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="dist" />
+	
+	<property name="JAR" value="${lib.dir}/js.jar" />
+    <property name="YUICompressor" value="${lib.dir}/yuicompressor-2.4.2.jar" />
+	
+	<!-- File names for distribution -->
+	<property name="JMC" value="${build.dir}/jMonthCalendar.js" />
+	<property name="JMC_LITE" value="${build.dir}/jMonthCalendar.lite.js" />	
+	<property name="JMC_MIN" value="${build.dir}/jMonthCalendar.min.js" />
+	<property name="JMC_PACK" value="${build.dir}/jMonthCalendar.pack.js" />
+	
+	
+	
+	<!-- MAIN -->
+	<target name="clean" description="Deletes the build directory">
+		<delete dir="${build.dir}" failonerror="false" />
+		<delete dir="${dist.dir}" failonerror="false" />
+	</target>
+	
+	
+	<target name="init">
+		<echo>Running Init</echo>
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+	
+	
+	<target name="jmonthcalendar" description="Builds and concates source files to one." depends="init">
+		<echo message="Building ${JMC}" />
+		<concat destfile="${JMC}">
+			<fileset dir="${src.dir}" includes="jMonthCalendar.js" />
+		</concat>
+		<replaceregexp match="@VERSION" replace="${version}" flags="g" byline="true" file="${JMC}" />
+		<echo message="${JMC} built." />
+	</target>
+	
+	
+	<target name="release" depends="jmonthcalendar">
+		<property name="release.dir" value="${dist.dir}/jMonthCalendar_${version}" />
+		<mkdir dir="${release.dir}" />
+		<mkdir dir="${release.dir}/js" />		
+		<mkdir dir="${release.dir}/css" />
+		
+		<copy file="${src.dir}/jquery-1.3.min.js" todir="${release.dir}/js" />
+		<copy file="${JMC}" tofile="${release.dir}/js/jMonthCalendar-${version}.js" />
+		
+		<copy file="css/core.css" todir="${release.dir}/css" />
+		
+		<copy file="index.html" todir="${release.dir}" />
+	</target>
+	
+	
+	
+</project>
