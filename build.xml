@@ -2,7 +2,7 @@
 <project name="jMonthCalendar" default="jmonthcalendar" basedir=".">
 
 	<!-- SETUP -->
-	<loadfile property="version" srcfile="version.txt" />
+	<loadfile property="version" srcfile="VERSION.txt" />
 	<property name="src.dir" value="src" />
 	<property name="src.js.dir" value="${src.dir}/js" />
 	<property name="src.css.dir" value="${src.dir}/css" />

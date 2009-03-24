@@ -4,6 +4,7 @@
 * Author:  Kyle LeNeau
 * Email:  kyle.leneau@gmail.com
 * Project Hompage:  http://www.bytecyclist.com/projects/jmonthcalendar
+* Source:  http://code.google.com/p/jmonthcalendar
 *
 */
 
@@ -92,6 +93,8 @@
 			if (k = jsonDateString.match(newReg)) {
 				return eval('(' + jsonDateString + ')');
 			}
+			
+			return tdt;
 		}
 	};
 	jQuery.jMonthCalendar = jQuery.J = function() {};
@@ -217,7 +220,7 @@
 		
 		//Create Today link for later
 		var todayLink = jQuery('<div class="TodayLink"><a href="" class="link-today">'+ defaults.navLinks.t +'</a></div>').click(function() {
-			jQuery.J.ChangeMonth(today);
+			jQuery.J.ChangeMonth(new Date());
 			return false;
 		});
 
