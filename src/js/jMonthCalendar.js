@@ -290,7 +290,7 @@
 					
 				
 				if(sDt) {
-					if ((sDt >= _beginDate) && (sDt <= _endDate)) {					
+					if ((sDt >= _beginDate) && (sDt <= _endDate)) {			
 						var cell = jQuery("#" + getDateId(sDt), jQuery(ids.container));
 						var label = jQuery(".DateLabel", cell);
 						
