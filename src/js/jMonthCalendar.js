@@ -98,83 +98,8 @@
 		}
 	};
 	jQuery.jMonthCalendar = jQuery.J = function() {};
-
-
-			
-		
-	jQuery.J.ExtendDate = function(options) {
-		if (Date.prototype.tempDate) {
-			return;
-		}
-		Date.prototype.tempDate = null;
-		Date.prototype.months = defaults.locale.months;
-		Date.prototype.monthsShort = defaults.locale.monthsShort;
-		Date.prototype.days = defaults.locale.days;
-		Date.prototype.daysShort = defaults.locale.daysShort;
-		Date.prototype.getMonthName = function(fullName) {
-			return this[fullName ? 'months' : 'monthsShort'][this.getMonth()];
-		};
-		Date.prototype.getDayName = function(fullName) {
-			return this[fullName ? 'days' : 'daysShort'][this.getDay()];
-		};
-		Date.prototype.getShortDate = function() {
-			this.setHours(0,0,0,0);
-			return this;
-		};
-		Date.prototype.toShortDateString = function() {
-			return (this.getMonth()+1) + "/" + this.getDate() + "/" + this.getFullYear();
-		};
-		Date.prototype.addDays = function (n) {
-			this.setDate(this.getDate() + n);
-			this.tempDate = this.getDate();
-		};
-		Date.prototype.addMonths = function (n) {
-			if (this.tempDate == null) {
-				this.tempDate = this.getDate();
-			}
-			this.setDate(1);
-			this.setMonth(this.getMonth() + n);
-			this.setDate(Math.min(this.tempDate, this.getMaxDays()));
-		};
-		Date.prototype.addYears = function (n) {
-			if (this.tempDate == null) {
-				this.tempDate = this.getDate();
-			}
-			this.setDate(1);
-			this.setFullYear(this.getFullYear() + n);
-			this.setDate(Math.min(this.tempDate, this.getMaxDays()));
-		};
-		Date.prototype.getMaxDays = function() {
-			var tmpDate = new Date(Date.parse(this)),
-				d = 28, m;
-			m = tmpDate.getMonth();
-			d = 28;
-			while (tmpDate.getMonth() == m) {
-				d ++;
-				tmpDate.setDate(d);
-			}
-			return d - 1;
-		};
-		Date.prototype.getFirstDay = function() {
-			var tmpDate = new Date(Date.parse(this));
-			tmpDate.setDate(1);
-			return tmpDate.getDay();
-		};
-		Date.prototype.getWeekNumber = function() {
-			var tempDate = new Date(this);
-			tempDate.setDate(tempDate.getDate() - (tempDate.getDay() + 6) % 7 + 3);
-			var dms = tempDate.valueOf();
-			tempDate.setMonth(0);
-			tempDate.setDate(4);
-			return Math.round((dms - tempDate.valueOf()) / (604800000)) + 1;
-		};
-		Date.prototype.getDayOfYear = function() {
-			var now = new Date(this.getFullYear(), this.getMonth(), this.getDate(), 0, 0, 0);
-			var then = new Date(this.getFullYear(), 0, 0, 0, 0, 0);
-			var time = now - then;
-			return Math.floor(time / 24*60*60*1000);
-		};
-	}
+	
+	
 	
 	jQuery.J.DrawCalendar = function(dateIn){
 		var today = defaults.calendarStartDate;
@@ -252,7 +177,7 @@
 		//Build up the Body
 		var tBody = jQuery('<tbody id="CalendarBody"></tbody>');
 		var isCurrentMonth = (d.getMonth() == today.getMonth() && d.getFullYear() == today.getFullYear());
-		var maxDays = d.getMaxDays();
+		var maxDays = Date.getDaysInMonth(d.getFullYear(), d.getMonth());
 		
 		
 		//what is the currect day #
@@ -282,7 +207,7 @@
 			for (var i=0; i<7; i++) {
 				var weekday = (defaults.firstDayOfWeek + i) % 7;
 				var atts = {'class':"DateBox" + (weekday == 0 || weekday == 6 ? ' Weekend ' : ''),
-							'date':_currentDate.toShortDateString(),
+							'date':_currentDate.toString("M/d/yyyy"),
 							'id': getDateId(_currentDate)
 				};
 
@@ -399,6 +324,7 @@
 	}
 	
 	
+	
 	jQuery.J.AddEvents = function(eventCollection) {
 		if(eventCollection) {
 			if(eventCollection.length > 1) {
@@ -430,7 +356,6 @@
 		var today = new Date();
 		
 		options = jQuery.extend(defaults, options);
-		jQuery.J.ExtendDate(options);
 		
 		jQuery.J.DrawCalendar();
 		
