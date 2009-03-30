@@ -25,6 +25,9 @@
 			labelHeight: 25,
 			firstDayOfWeek: 0,
 			calendarStartDate:new Date(),
+			dragableEvents: false,
+			activeDroppableClass: false,
+			hoverDroppableClass: false,
 			navLinks: {
 				p:'Prev', 
 				n:'Next', 
@@ -38,6 +41,8 @@
 			onEventBlockOut: function(event) { return true; },
 			onDayLinkClick: function(date) { return true; },
 			onDayCellClick: function(date) { return true; },
+			onDayCellDblClick: function(dateIn) { return true; },
+			onEventDropped: function(event, newDate) { return true; },
 			locale: {
 				days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 				daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -222,9 +227,41 @@
 					atts['class'] += ' Today';
 				}
 				
-				var dayLink = jQuery('<a href="#">' + _currentDate.getDate() + '</a>');
-				thisRow.append(jQuery("<td></td>").attr(atts).append(jQuery('<div class="DateLabel"></div>').append(dayLink)));
-					
+				//DateBox Events
+				var dateLink = jQuery('<div class="DateLabel"><a href="">' + _currentDate.getDate() + '</a></div>').click(function(e) {
+                    defaults.onDayLinkClick(new Date($(this).parent().attr("date")));
+                    e.stopPropagation();
+                });
+				
+				var dateBox = jQuery("<td></td>").attr(atts).append(dateLink).dblclick(function(e) {
+                    defaults.onDayCellDblClick(new Date($(this).attr("date")));
+                    e.stopPropagation();
+                }).click(function(e) {
+					defaults.onDayCellClick(new Date($(this).attr("date")));
+                    e.stopPropagation();
+				});
+				
+				if (defaults.dragableEvents) {
+                    dateBox.droppable({
+                        hoverClass: defaults.hoverDroppableClass,
+                        activeClass: defaults.activeDroppableClass,
+                        drop: function(e, ui) {
+                            ui.draggable.attr("style", "position: relative; display: block;");
+                            $(this).append(ui.draggable);
+                            var event;
+                            $.each(calendarEvents, function() {
+                                if (this.EventID == ui.draggable.attr("id")) {
+                                    event = this;
+                                }
+                            });
+                            defaults.onEventDropped(event, $(this).attr("date"));
+							return false;
+                        }
+                    });
+                }
+				
+				thisRow.append(dateBox);
+				
 				curDay++;
 				_currentDate.addDays(1);
 			}
@@ -240,20 +277,6 @@
 		a.hide();
 		a.html(cal);		
 		a.fadeIn("normal");
-		
-		
-		//connect up the day links/cells
-		jQuery.each(jQuery("td", tBody), function() {
-			var dt = getDateFromId(jQuery(this).attr("id"));
-			jQuery(this).click(function(e) { 
-				defaults.onDayCellClick(dt);
-				e.stopPropagation();
-			});
-			jQuery("a", jQuery(this)).click(function(e) {
-				defaults.onDayLinkClick(dt);
-				e.stopPropagation(); 
-			});
-		});
 		
 		DrawEventsOnCalendar();
 	}
@@ -309,6 +332,9 @@
 						});
 						event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
 						
+						if (defaults.dragableEvents) {
+							event.draggable({ containment: '#CalendarBody' });
+						}
 						
 						event.hide();
 						cell.append(event);
