@@ -29,8 +29,9 @@
 			activeDroppableClass: false,
 			hoverDroppableClass: false,
 			navLinks: {
-				p:'Prev', 
-				n:'Next', 
+				enableToday: false,
+				p:'&lsaquo; Prev', 
+				n:'Next &rsaquo;', 
 				t:'Today'
 			},
 			onMonthChanging: function(dateIn) { return true; },
@@ -122,14 +123,14 @@
 		
 		// Create Previous Month link for later
 		var prevMonth = d.getMonth() == 0 ? new Date(d.getFullYear()-1, 11, 1) : new Date(d.getFullYear(), d.getMonth()-1, 1);
-		var prevMLink = jQuery('<div class="MonthNavPrev"><a href="" class="link-prev">&lsaquo; '+ defaults.navLinks.p +'</a></div>').click(function() {
+		var prevMLink = jQuery('<div class="MonthNavPrev"><a href="" class="link-prev">'+ defaults.navLinks.p +'</a></div>').click(function() {
 			jQuery.J.ChangeMonth(prevMonth);
 			return false;
 		});
 		
 		//Create Next Month link for later
 		var nextMonth = d.getMonth() == 11 ? new Date(d.getFullYear()+1, 0, 1) : new Date(d.getFullYear(), d.getMonth()+1, 1);
-		var nextMLink = jQuery('<div class="MonthNavNext"><a href="" class="link-next">'+ defaults.navLinks.n +' &rsaquo;</a></div>').click(function() {
+		var nextMLink = jQuery('<div class="MonthNavNext"><a href="" class="link-next">'+ defaults.navLinks.n +'</a></div>').click(function() {
 			jQuery.J.ChangeMonth(nextMonth);
 			return false;
 		});
@@ -148,18 +149,21 @@
 			return false;
 		});		
 		
-		//Create Today link for later
-		var todayLink = jQuery('<div class="TodayLink"><a href="" class="link-today">'+ defaults.navLinks.t +'</a></div>').click(function() {
-			jQuery.J.ChangeMonth(new Date());
-			return false;
-		});
+		if(defaults.navLinks.enableToday) {
+			//Create Today link for later
+			var todayLink = jQuery('<div class="TodayLink"><a href="" class="link-today">'+ defaults.navLinks.t +'</a></div>').click(function() {
+				jQuery.J.ChangeMonth(new Date());
+				return false;
+			});
+		}
 
 		//Build up the Header first,  Navigation
 		var navRow = jQuery('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>').css({ 
 			"height" : defaults.navHeight 
 		});
 		
-		jQuery('.MonthNavigation', navRow).append(prevMLink, nextMLink, todayLink);
+		jQuery('.MonthNavigation', navRow).append(prevMLink, nextMLink);
+		if(defaults.navLinks.enableToday) { jQuery('.MonthNavigation', navRow).append(todayLink); }
 		jQuery('.MonthNavigation', navRow).append(jQuery('<div class="MonthName"></div>').append(defaults.locale.months[d.getMonth()] + " " + d.getFullYear()));
 		jQuery('.MonthNavigation', navRow).append(nextYLink, prevYLink);
 		
