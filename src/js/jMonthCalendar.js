@@ -29,7 +29,9 @@
 			activeDroppableClass: false,
 			hoverDroppableClass: false,
 			navLinks: {
-				enableToday: false,
+				enableToday: true,
+				enableNextYear: true,
+				enablePrevYear: true,
 				p:'&lsaquo; Prev', 
 				n:'Next &rsaquo;', 
 				t:'Today'
@@ -137,35 +139,44 @@
 		
 		//Create Previous Year link for later
 		var prevYear = new Date(d.getFullYear()-1, d.getMonth(), d.getDate());
-		var prevYLink = jQuery('<div class="YearNavPrev"><a href="">'+ prevYear.getFullYear() +'</a></div>').click(function() {
-			jQuery.J.ChangeMonth(prevYear);
-			return false;
-		});
+		var prevYLink;
+		if(defaults.navLinks.enablePrevYear) {
+			prevYLink = jQuery('<div class="YearNavPrev"><a href="">'+ prevYear.getFullYear() +'</a></div>').click(function() {
+				jQuery.J.ChangeMonth(prevYear);
+				return false;
+			});
+		}
 		
 		//Create Next Year link for later
 		var nextYear = new Date(d.getFullYear()+1, d.getMonth(), d.getDate());
-		var nextYLink = jQuery('<div class="YearNavNext"><a href="">'+ nextYear.getFullYear() +'</a></div>').click(function() {
-			jQuery.J.ChangeMonth(nextYear);
-			return false;
-		});		
+		var nextYLink;
+		if(defaults.navLinks.enableNextYear) {
+			nextYLink = jQuery('<div class="YearNavNext"><a href="">'+ nextYear.getFullYear() +'</a></div>').click(function() {
+				jQuery.J.ChangeMonth(nextYear);
+				return false;
+			});
+		}
 		
+		var todayLink;
 		if(defaults.navLinks.enableToday) {
 			//Create Today link for later
-			var todayLink = jQuery('<div class="TodayLink"><a href="" class="link-today">'+ defaults.navLinks.t +'</a></div>').click(function() {
+			todayLink = jQuery('<div class="TodayLink"><a href="" class="link-today">'+ defaults.navLinks.t +'</a></div>').click(function() {
 				jQuery.J.ChangeMonth(new Date());
 				return false;
 			});
 		}
 
 		//Build up the Header first,  Navigation
-		var navRow = jQuery('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>').css({ 
-			"height" : defaults.navHeight 
-		});
+		var navRow = jQuery('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>').css({ "height" : defaults.navHeight });
+		var monthNavHead = jQuery('.MonthNavigation', navRow);
 		
-		jQuery('.MonthNavigation', navRow).append(prevMLink, nextMLink);
-		if(defaults.navLinks.enableToday) { jQuery('.MonthNavigation', navRow).append(todayLink); }
-		jQuery('.MonthNavigation', navRow).append(jQuery('<div class="MonthName"></div>').append(defaults.locale.months[d.getMonth()] + " " + d.getFullYear()));
-		jQuery('.MonthNavigation', navRow).append(nextYLink, prevYLink);
+		monthNavHead.append(prevMLink, nextMLink);
+		if(defaults.navLinks.enableToday) { monthNavHead.append(todayLink); }
+
+		monthNavHead.append(jQuery('<div class="MonthName"></div>').append(defaults.locale.months[d.getMonth()] + " " + d.getFullYear()));
+		
+		if(defaults.navLinks.enableNextYear) { monthNavHead.append(nextYLink); }
+		if(defaults.navLinks.enablePrevYear) { monthNavHead.append(prevYLink); }
 		
 		
 		//  Days
