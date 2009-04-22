@@ -388,9 +388,10 @@
 	}
 	
 	jQuery.J.ChangeMonth = function(dateIn) {
-		defaults.onMonthChanging(dateIn);
-		jQuery.J.DrawCalendar(dateIn);
-		defaults.onMonthChanged(dateIn);
+		if (defaults.onMonthChanging(dateIn)) {
+			jQuery.J.DrawCalendar(dateIn);
+			defaults.onMonthChanged(dateIn);
+		}
 	}
 	
 	jQuery.J.Initialize = function(options, events) {
