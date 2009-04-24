@@ -19,10 +19,7 @@
 	var _endDate;
 	var calendarEvents;
 	var defaults = {
-			height: 650,
-			width: 980,
-			navHeight: 25,
-			labelHeight: 25,
+			headerHeight: 50,
 			firstDayOfWeek: 0,
 			calendarStartDate:new Date(),
 			dragableEvents: false,
@@ -167,7 +164,7 @@
 		}
 
 		//Build up the Header first,  Navigation
-		var navRow = jQuery('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>').css({ "height" : defaults.navHeight });
+		var navRow = jQuery('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>');
 		var monthNavHead = jQuery('.MonthNavigation', navRow);
 		
 		monthNavHead.append(prevMLink, nextMLink);
@@ -175,22 +172,19 @@
 
 		monthNavHead.append(jQuery('<div class="MonthName"></div>').append(defaults.locale.months[d.getMonth()] + " " + d.getFullYear()));
 		
-		if(defaults.navLinks.enableNextYear) { monthNavHead.append(nextYLink); }
 		if(defaults.navLinks.enablePrevYear) { monthNavHead.append(prevYLink); }
+		if(defaults.navLinks.enableNextYear) { monthNavHead.append(nextYLink); }
 		
 		
 		//  Days
-		var headRow = jQuery("<tr></tr>").css({ 
-			"height" : defaults.labelHeight 
-		});
-		
+		var headRow = jQuery("<tr></tr>");		
 		for (var i=defaults.firstDayOfWeek; i<defaults.firstDayOfWeek+7; i++) {
 			var weekday = i%7;
 			var wordday = defaults.locale.days[weekday];
 			headRow.append('<th title="' + wordday + '" class="DateHeader' + (weekday == 0 || weekday == 6 ? ' Weekend' : '') + '"><span>' + wordday + '</span></th>');
 		}
 		
-		headRow = jQuery("<thead id=\"CalendarHead\"></thead>").append(headRow);
+		headRow = jQuery("<thead id=\"CalendarHead\"></thead>").css({ "height" : defaults.headerHeight + "px" }).append(headRow);
 		headRow = headRow.prepend(navRow);
 
 
@@ -213,11 +207,15 @@
 
 		
 		// Render calendar
-		//<td class=\"DateBox\"><div class=\"DateLabel\"><a href=\"#\">" + val + "</a></div></td>";
 		var rowCount = 0;
-		var rowHeight = (defaults.height - defaults.labelHeight - defaults.navHeight) / Math.ceil((maxDays + Math.abs(curDay)) / 7);
-		//alert("rowHeight=" + rowHeight);
+		var containerHeight = jQuery(ids.container).outerHeight();
+		//alert("container height: " + containerHeight);		
+		//alert("header height: " + defaults.headerHeight);
 		
+		var rowHeight = (containerHeight - defaults.headerHeight) / Math.ceil((maxDays + Math.abs(curDay)) / 7);
+		//alert("rowHeight=" + rowHeight);
+
+
 		do {
 	  		var thisRow = jQuery("<tr></tr>");
 			thisRow.css({
@@ -286,11 +284,11 @@
 		} while (curDay < maxDays);
 
 
-		var a = jQuery(ids.container).css({ "width" : defaults.width + "px", "height" : defaults.height + "px" });
+		var a = jQuery(ids.container);//.css({ "width" : defaults.width + "px", "height" : defaults.height + "px" });
 		var cal = jQuery('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>').append(headRow, tBody);
 		
 		a.hide();
-		a.html(cal);		
+		a.html(cal);
 		a.fadeIn("normal");
 		
 		DrawEventsOnCalendar();
@@ -298,8 +296,8 @@
 	
 	var DrawEventsOnCalendar = function() {	
 		if (calendarEvents && calendarEvents.length > 0) {
-			var headHeight = defaults.labelHeight + defaults.navHeight;
-			var dtLabelHeight = jQuery(".DateLabel:first", ids.container).outerHeight();
+			var label = jQuery(".DateLabel:first", ids.container);			
+			var container = jQuery(ids.container);
 			
 			
 			jQuery.each(calendarEvents, function(){
@@ -328,17 +326,22 @@
 					
 				
 				if(sDt) {
-					if ((sDt >= _beginDate) && (sDt <= _endDate)) {			
+					if ((sDt >= _beginDate) && (sDt <= _endDate)) {
 						var cell = jQuery("#" + getDateId(sDt), jQuery(ids.container));
-						var label = jQuery(".DateLabel", cell);
+						var pos = cell.position();
 						
+					
 						var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
 						link.click(function(e) {
 							defaults.onEventLinkClick(ev);
 							e.stopPropagation();
 						});
 						var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>').append(link);
-						
+						event.css({
+							"top" : pos.top + label.height(),
+							"left" : pos.left,
+							"width" : label.innerWidth() - 7
+						});
 						
 						if(ev.CssClass) { event.addClass(ev.CssClass) }
 						event.click(function(e) { 
@@ -352,7 +355,7 @@
 						}
 						
 						event.hide();
-						cell.append(event);
+						container.append(event);
 						event.fadeIn("normal");
 					}
 				}
