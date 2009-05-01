@@ -9,16 +9,12 @@
 */
 
 (function($) {
-	var ids = {
-			container: "#jMonthCalendar",
-			head: "#CalendarHead",
-			body: "#CalendarBody"
-	};
 	var _selectedDate;
 	var _beginDate;
 	var _endDate;
 	var calendarEvents;
 	var defaults = {
+			containerId: "#jMonthCalendar",
 			headerHeight: 50,
 			firstDayOfWeek: 0,
 			calendarStartDate:new Date(),
@@ -208,7 +204,7 @@
 		
 		// Render calendar
 		var rowCount = 0;
-		var containerHeight = jQuery(ids.container).outerHeight();
+		var containerHeight = jQuery(defaults.containerId).outerHeight();
 		//alert("container height: " + containerHeight);		
 		//alert("header height: " + defaults.headerHeight);
 		
@@ -284,7 +280,7 @@
 		} while (curDay < maxDays);
 
 
-		var a = jQuery(ids.container);//.css({ "width" : defaults.width + "px", "height" : defaults.height + "px" });
+		var a = jQuery(defaults.containerId);//.css({ "width" : defaults.width + "px", "height" : defaults.height + "px" });
 		var cal = jQuery('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>').append(headRow, tBody);
 		
 		a.hide();
@@ -296,8 +292,8 @@
 	
 	var DrawEventsOnCalendar = function() {	
 		if (calendarEvents && calendarEvents.length > 0) {
-			var label = jQuery(".DateLabel:first", ids.container);			
-			var container = jQuery(ids.container);
+			var label = jQuery(".DateLabel:first", defaults.containerId);			
+			var container = jQuery(defaults.containerId);
 			
 			
 			jQuery.each(calendarEvents, function(){
@@ -327,7 +323,7 @@
 				
 				if(sDt) {
 					if ((sDt >= _beginDate) && (sDt <= _endDate)) {
-						var cell = jQuery("#" + getDateId(sDt), jQuery(ids.container));
+						var cell = jQuery("#" + getDateId(sDt), jQuery(defaults.containerId));
 						var pos = cell.position();
 						
 					
@@ -364,7 +360,7 @@
 	}
 	
 	var ClearEventsOnCalendar = function() {
-		jQuery(".Event", jQuery(ids.container)).remove();
+		jQuery(".Event", jQuery(defaults.containerId)).remove();
 	}
 	
 	
