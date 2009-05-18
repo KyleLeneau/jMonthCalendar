@@ -12,6 +12,7 @@
 	var _selectedDate;
 	var _beginDate;
 	var _endDate;
+	var _boxes = [];
 	var calendarEvents;
 	var defaults = {
 			containerId: "#jMonthCalendar",
@@ -96,6 +97,38 @@
 			}
 			
 			return tdt;
+		}
+	};
+	
+	//This function will clean the JSON array, primaryly the dates and put the correct ones in the object.  Intended to alwasy be called on event functions.
+	var FilterEventCollection = function() {
+		if (calendarEvents && calendarEvents.length > 0) {
+			jQuery.each(calendarEvents, function(){
+				var ev = this;
+				//Date Parse the JSON to create a new Date to work with here				
+				if(ev.StartDateTime) {
+					if (typeof ev.StartDateTime == 'object' && ev.StartDateTime.getDate) { this.StartDateTime = ev.StartDateTime; }
+					if (typeof ev.StartDateTime == 'string' && ev.StartDateTime.split) { this.StartDateTime = GetJSONDate(ev.StartDateTime); }
+				} else if(ev.Date) { // DEPRECATED
+					if (typeof ev.Date == 'object' && ev.Date.getDate) { this.StartDateTime = ev.Date; }
+					if (typeof ev.Date == 'string' && ev.Date.split) { this.StartDateTime = GetJSONDate(ev.Date); }
+				} else {
+					return;  //no start date, or legacy date. no event.
+				}
+				
+				if(ev.EndDateTime) {
+					if (typeof ev.EndDateTime == 'object' && ev.EndDateTime.getDate) { this.EndDateTime = ev.EndDateTime; }
+					if (typeof ev.EndDateTime == 'string' && ev.EndDateTime.split) { this.EndDateTime = GetJSONDate(ev.EndDateTime); }
+				} else {
+					this.EndDateTime = ev.StartDateTime;
+				}
+			});
+		}
+	};
+	
+	var ClearBoxes = function() {
+		for (var i = 0; i < _boxes.length; i++) {
+			_boxes[i].clear();
 		}
 	};
 	jQuery.jMonthCalendar = jQuery.J = function() {};
@@ -269,6 +302,7 @@
                     });
                 }
 				
+				_boxes.push(new DateBox(getDateId(_currentDate), _currentDate, dateBox, dateLink));
 				thisRow.append(dateBox);
 				
 				curDay++;
@@ -290,80 +324,129 @@
 		DrawEventsOnCalendar();
 	}
 	
-	var DrawEventsOnCalendar = function() {	
+	var DrawEventsOnCalendar = function() {
+		//filter the JSON array for proper dates
+		FilterEventCollection();
+		
+		for(var i = 0; i < _boxes.length; i++) {
+			_boxes[i].echo();
+		}
+		
 		if (calendarEvents && calendarEvents.length > 0) {
-			var label = jQuery(".DateLabel:first", defaults.containerId);			
+			var label = jQuery(".DateLabel:first", defaults.containerId);
 			var container = jQuery(defaults.containerId);
 			
 			
 			jQuery.each(calendarEvents, function(){
 				var ev = this;				
 				//Date Parse the JSON to create a new Date to work with here
-				var sDt, eDt;
+				var sDt = ev.StartDateTime;
+				var eDt = ev.EndDateTime;
 				
-				if(ev.StartDateTime) {
-					if (typeof ev.StartDateTime == 'object' && ev.StartDateTime.getDate) { sDt = ev.StartDateTime; }
-					if (typeof ev.StartDateTime == 'string' && ev.StartDateTime.split) { sDt = GetJSONDate(ev.StartDateTime); }
-				} else if(ev.Date) { // DEPRECATED
-					if (typeof ev.Date == 'object' && ev.Date.getDate) { sDt = ev.Date; }
-					if (typeof ev.Date == 'string' && ev.Date.split) { sDt = GetJSONDate(ev.Date); }
-				} else {
-					return;  //no start date, or legacy date. no event.
-				}
-				
-				if(ev.EndDateTime) {
-					if (typeof ev.EndDateTime == 'object' && ev.EndDateTime.getDate) { eDt = ev.EndDateTime; }
-					if (typeof ev.EndDateTime == 'string' && ev.EndDateTime.split) { eDt = GetJSONDate(ev.EndDateTime); }
-				}
-				
-				
-				//is the start date in range, put it on the calendar?			
-				//handle multi day range first
-					
 				
 				if(sDt) {
-					if ((sDt >= _beginDate) && (sDt <= _endDate)) {
-						var cell = jQuery("#" + getDateId(sDt), jQuery(defaults.containerId));
-						var pos = cell.position();
-						
+					if (sDt.between(_beginDate, _endDate)) {
 					
-						var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
-						link.click(function(e) {
-							defaults.onEventLinkClick(ev);
-							e.stopPropagation();
-						});
-						var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>').append(link);
-						event.css({
-							"top" : pos.top + label.height(),
-							"left" : pos.left,
-							"width" : label.innerWidth() - 7
-						});
+						var multi = false;
+						var daysBetween = 0;
+						//One Day in Milliseconds
+						var oneDay = 1000 * 60 * 60 * 24;
 						
-						if(ev.CssClass) { event.addClass(ev.CssClass) }
-						event.click(function(e) { 
-							defaults.onEventBlockClick(ev); 
-							e.stopPropagation(); 
-						});
-						event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
-						
-						if (defaults.dragableEvents) {
-							event.draggable({ containment: '#CalendarBody' });
+						if (eDt.compareTo(sDt) == 1) {
+							daysBetween = (eDt - sDt) / oneDay;
 						}
-						
-						event.hide();
-						container.append(event);
-						event.fadeIn("normal");
+						if (daysBetween >= 1) {
+							multi = true;
+							alert("multi day event: " + daysBetween);
+							RenderMultiDayEvent(daysBetween, ev);
+						} else {
+							RenderSingleDayEvent(ev);
+						}
 					}
 				}
 			});
 		}
 	}
 	
-	var ClearEventsOnCalendar = function() {
-		jQuery(".Event", jQuery(defaults.containerId)).remove();
+	var RenderSingleDayEvent = function(ev) {
+		var container = jQuery(defaults.containerId);
+		var label = jQuery(".DateLabel:first", defaults.containerId);
+		
+		var cell = jQuery("#" + getDateId(ev.StartDateTime), jQuery(defaults.containerId));
+		var pos = cell.position();
+		
+		var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>');		
+		event.css({ "top" : pos.top + label.height(), "left" : pos.left, "width" : label.innerWidth() - 7 });		
+		
+		var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
+		link.click(function(e) {
+			defaults.onEventLinkClick(ev);
+			e.stopPropagation();
+		});
+		event.append(link);
+		
+		if(ev.CssClass) { event.addClass(ev.CssClass) }
+		event.click(function(e) { 
+			defaults.onEventBlockClick(ev); 
+			e.stopPropagation(); 
+		});
+		event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
+		
+		if (defaults.dragableEvents) {
+			event.draggable({ containment: '#CalendarBody' });
+		}
+		
+		event.hide();
+		container.append(event);
+		event.fadeIn("normal");
 	}
 	
+	var RenderMultiDayEvent = function(daysBetween, ev) {
+		var container = jQuery(defaults.containerId);
+		var label = jQuery(".DateLabel:first", defaults.containerId);
+		
+		var cell = jQuery("#" + getDateId(ev.StartDateTime), jQuery(defaults.containerId));
+		var pos = cell.position();
+		
+		//get the position and width of the event
+		var top = pos.top + label.height();
+		var left = pos.left;
+		var width = (label.innerWidth() * (daysBetween + 1)) - (7 - daysBetween);
 	
+	
+		var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>');		
+		event.css({ "top" : top, "left" : left, "width" : width });
+	
+	
+		var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
+		link.click(function(e) {
+			defaults.onEventLinkClick(ev);
+			e.stopPropagation();
+		});
+		event.append(link);
+		
+		if(ev.CssClass) { event.addClass(ev.CssClass) }
+		event.click(function(e) { 
+			defaults.onEventBlockClick(ev); 
+			e.stopPropagation(); 
+		});
+		event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
+		
+		if (defaults.dragableEvents) {
+			event.draggable({ containment: '#CalendarBody' });
+		}
+		
+		event.hide();
+		container.append(event);
+		event.fadeIn("normal");
+	}
+	
+
+	
+	jQuery.J.ClearEventsOnCalendar = function() {
+		ClearBoxes();
+		jQuery(".Event", jQuery(defaults.containerId)).remove();
+	}
 	
 	jQuery.J.AddEvents = function(eventCollection) {
 		if(eventCollection) {
@@ -375,7 +458,7 @@
 				//add new single event to ed of array
 				calendarEvents.push(eventCollection);
 			}
-			ClearEventsOnCalendar();
+			jQuery.J.ClearEventsOnCalendar();
 			DrawEventsOnCalendar();
 		}
 	}
@@ -388,6 +471,7 @@
 	
 	jQuery.J.ChangeMonth = function(dateIn) {
 		if (defaults.onMonthChanging(dateIn)) {
+			ClearBoxes();
 			jQuery.J.DrawCalendar(dateIn);
 			defaults.onMonthChanged(dateIn);
 		}
@@ -398,13 +482,30 @@
 		
 		options = jQuery.extend(defaults, options);
 		
-		jQuery.J.DrawCalendar();
-		
-		if(events)
-		{
+		if(events) {
 			calendarEvents = events;
-			//Load for the current month
-			DrawEventsOnCalendar();
 		}
+		
+		ClearBoxes();
+		jQuery.J.DrawCalendar();
 	};
 })(jQuery);
+
+
+function DateBox(id, boxDate, cell, label) {
+	this.id = id;
+	this.date = boxDate;
+	this.cell = cell;
+	this.label = label;
+	this.events= [];
+	this.isTooMannySet = false;
+	
+	this.echo = function() {
+		alert(this.id);
+	}
+	
+	this.clear = function() {
+		this.events = [];
+		this.isTooMannySet = false;
+	}
+}
