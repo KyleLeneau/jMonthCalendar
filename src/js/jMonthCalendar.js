@@ -49,16 +49,20 @@
 				weekMin: 'wk'
 			}
 		};
+		
+	jQuery.jMonthCalendar = jQuery.J = function() {};
 	
 	var getDateFromId = function(dateIdString) {
 		//c_01012009		
 		return new Date(dateIdString.substring(6, 10), dateIdString.substring(2, 4)-1, dateIdString.substring(4, 6));
 	};
+	
 	var getDateId = function(date) {
 		var month = ((date.getMonth()+1)<10) ? "0" + (date.getMonth()+1) : (date.getMonth()+1);
 		var day = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate();
 		return "c_" + month + day + date.getFullYear();
 	};
+	
 	var GetJSONDate = function(jsonDateString) {
 		//check conditions for different types of accepted dates
 		var tDt, k;
@@ -130,8 +134,10 @@
 		for (var i = 0; i < _boxes.length; i++) {
 			_boxes[i].clear();
 		}
+		_boxes = [];
 	};
-	jQuery.jMonthCalendar = jQuery.J = function() {};
+	
+	
 	
 	
 	
@@ -148,6 +154,7 @@
 			d.setDate(1);
 		}
 		
+		ClearBoxes();
 		
 		// Create Previous Month link for later
 		var prevMonth = d.getMonth() == 0 ? new Date(d.getFullYear()-1, 11, 1) : new Date(d.getFullYear(), d.getMonth()-1, 1);
@@ -221,15 +228,15 @@
 		var tBody = jQuery('<tbody id="CalendarBody"></tbody>');
 		var isCurrentMonth = (d.getMonth() == today.getMonth() && d.getFullYear() == today.getFullYear());
 		var maxDays = Date.getDaysInMonth(d.getFullYear(), d.getMonth());
+		alert("maxDays: " + maxDays);
 		
-		
-		//what is the currect day #
+		//what is the current day #
 		var curDay = defaults.firstDayOfWeek - d.getDay();
 		if (curDay > 0) curDay -= 7
 		//alert(curDay);
 		
 		var t = (maxDays + Math.abs(curDay));
-		
+
 		_beginDate = new Date(d.getFullYear(), d.getMonth(), curDay+1);
 		_endDate = new Date(d.getFullYear(), d.getMonth()+1, (7-(t %= 7)) == 7 ? 0 : (7-(t %= 7)));
 		var _currentDate = new Date(_beginDate.getFullYear(), _beginDate.getMonth(), _beginDate.getDate());
@@ -302,7 +309,7 @@
                     });
                 }
 				
-				_boxes.push(new DateBox(getDateId(_currentDate), _currentDate, dateBox, dateLink));
+				_boxes.push(new DateBox(getDateId(_currentDate), _currentDate.clone(), dateBox, dateLink));
 				thisRow.append(dateBox);
 				
 				curDay++;
@@ -328,9 +335,9 @@
 		//filter the JSON array for proper dates
 		FilterEventCollection();
 		
-		for(var i = 0; i < _boxes.length; i++) {
-			_boxes[i].echo();
-		}
+		//for(var i = 0; i < _boxes.length; i++) {
+		//	_boxes[i].echo();
+		//}
 		
 		if (calendarEvents && calendarEvents.length > 0) {
 			var label = jQuery(".DateLabel:first", defaults.containerId);
@@ -471,7 +478,6 @@
 	
 	jQuery.J.ChangeMonth = function(dateIn) {
 		if (defaults.onMonthChanging(dateIn)) {
-			ClearBoxes();
 			jQuery.J.DrawCalendar(dateIn);
 			defaults.onMonthChanged(dateIn);
 		}
@@ -482,11 +488,8 @@
 		
 		options = jQuery.extend(defaults, options);
 		
-		if(events) {
-			calendarEvents = events;
-		}
+		if (events) { calendarEvents = events; }
 		
-		ClearBoxes();
 		jQuery.J.DrawCalendar();
 	};
 })(jQuery);
@@ -501,11 +504,30 @@ function DateBox(id, boxDate, cell, label) {
 	this.isTooMannySet = false;
 	
 	this.echo = function() {
-		alert(this.id);
+		alert(this.date);
 	}
 	
 	this.clear = function() {
 		this.events = [];
 		this.isTooMannySet = false;
+	}
+	
+	this.getCellPosition = function() {
+		if (!this.cell) { return this.cell.position(); }
+		return;
+	}
+	
+	this.getCellBox = function() {
+		if (!this.cell) { return this.cell; }
+		return;
+	}
+	
+	this.getLabelHeight = function() {
+		if (!this.label) { return this.label.height(); }
+		return;
+	}
+	
+	this.getDate = function() {
+		return this.date;
 	}
 }
