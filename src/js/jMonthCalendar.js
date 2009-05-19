@@ -9,10 +9,21 @@
 */
 
 (function($) {
-	var _selectedDate;
 	var _beginDate;
 	var _endDate;
 	var _boxes = [];
+	
+	var _workingDate = null;
+	var _daysInMonth = 0;
+	var _firstOfMonth = null;
+	var _lastOfMonth = null;
+	var _gridOffset = 0;
+	var _totalDates = 0;
+	var _gridRows = 0;
+	var _totalBoxes = 0;
+	var _dateRange = { startDate: null, endDate: null };
+	
+	
 	var calendarEvents;
 	var defaults = {
 			containerId: "#jMonthCalendar",
@@ -137,41 +148,49 @@
 		_boxes = [];
 	};
 	
-	
-	
-	
-	
-	jQuery.J.DrawCalendar = function(dateIn){
+	var InitDates = function(dateIn) {
 		var today = defaults.calendarStartDate;
-		var d;
-		
 		if(dateIn == undefined) {
 			//start from this month
-			d = new Date(today.getFullYear(), today.getMonth(), 1);
+			_workingDate = new Date(today.getFullYear(), today.getMonth(), 1);
 		} else {
 			//start from the passed in date
-			d = dateIn;
-			d.setDate(1);
+			_workingDate = dateIn;
+			_workingDate.setDate(1);
 		}
 		
-		ClearBoxes();
+		_daysInMonth = _workingDate.getDaysInMonth();  //alert("days in month: " + _daysInMonth);
+		_firstOfMonth = _workingDate.clone().moveToFirstDayOfMonth();  //alert("first day of month: " + _firstOfMonth);
+		_lastOfMonth = _workingDate.clone().moveToLastDayOfMonth();  //alert("last day of month: " + _lastOfMonth);
+		_gridOffset = _firstOfMonth.getDay();  //alert("offset: " + _gridOffset);
+		_totalDates = _gridOffset + _daysInMonth;  //alert("total dates: " + _totalDates);
+		_gridRows = Math.ceil(_totalDates / 7);  //alert("grid rows: " + _gridRows);
+		_totalBoxes = _gridRows * 7;  //alert("total boxes: " + _totalBoxes);
 		
+		_dateRange.startDate = _firstOfMonth.clone().addDays((-1) * _gridOffset);
+		//alert("dateRange startdate: " + _dateRange.startDate);
+		
+		_dateRange.endDate = _lastOfMonth.clone().addDays(_totalBoxes - (_daysInMonth + _gridOffset));
+		//alert("dateRange enddate: " + _dateRange.endDate);
+	};
+	
+	var InitHeaders = function() {
 		// Create Previous Month link for later
-		var prevMonth = d.getMonth() == 0 ? new Date(d.getFullYear()-1, 11, 1) : new Date(d.getFullYear(), d.getMonth()-1, 1);
+		var prevMonth = _workingDate.clone().addMonths(-1);
 		var prevMLink = jQuery('<div class="MonthNavPrev"><a href="" class="link-prev">'+ defaults.navLinks.p +'</a></div>').click(function() {
 			jQuery.J.ChangeMonth(prevMonth);
 			return false;
 		});
 		
 		//Create Next Month link for later
-		var nextMonth = d.getMonth() == 11 ? new Date(d.getFullYear()+1, 0, 1) : new Date(d.getFullYear(), d.getMonth()+1, 1);
+		var nextMonth = _workingDate.clone().addMonths(1);
 		var nextMLink = jQuery('<div class="MonthNavNext"><a href="" class="link-next">'+ defaults.navLinks.n +'</a></div>').click(function() {
 			jQuery.J.ChangeMonth(nextMonth);
 			return false;
 		});
 		
 		//Create Previous Year link for later
-		var prevYear = new Date(d.getFullYear()-1, d.getMonth(), d.getDate());
+		var prevYear = _workingDate.clone().addYears(-1);
 		var prevYLink;
 		if(defaults.navLinks.enablePrevYear) {
 			prevYLink = jQuery('<div class="YearNavPrev"><a href="">'+ prevYear.getFullYear() +'</a></div>').click(function() {
@@ -181,7 +200,7 @@
 		}
 		
 		//Create Next Year link for later
-		var nextYear = new Date(d.getFullYear()+1, d.getMonth(), d.getDate());
+		var nextYear = _workingDate.clone().addYears(1);
 		var nextYLink;
 		if(defaults.navLinks.enableNextYear) {
 			nextYLink = jQuery('<div class="YearNavNext"><a href="">'+ nextYear.getFullYear() +'</a></div>').click(function() {
@@ -206,7 +225,7 @@
 		monthNavHead.append(prevMLink, nextMLink);
 		if(defaults.navLinks.enableToday) { monthNavHead.append(todayLink); }
 
-		monthNavHead.append(jQuery('<div class="MonthName"></div>').append(defaults.locale.months[d.getMonth()] + " " + d.getFullYear()));
+		monthNavHead.append(jQuery('<div class="MonthName"></div>').append(defaults.locale.months[_workingDate.getMonth()] + " " + _workingDate.getFullYear()));
 		
 		if(defaults.navLinks.enablePrevYear) { monthNavHead.append(prevYLink); }
 		if(defaults.navLinks.enableNextYear) { monthNavHead.append(nextYLink); }
@@ -214,115 +233,108 @@
 		
 		//  Days
 		var headRow = jQuery("<tr></tr>");		
-		for (var i=defaults.firstDayOfWeek; i<defaults.firstDayOfWeek+7; i++) {
-			var weekday = i%7;
+		for (var i = defaults.firstDayOfWeek; i < defaults.firstDayOfWeek+7; i++) {
+			var weekday = i % 7;
 			var wordday = defaults.locale.days[weekday];
 			headRow.append('<th title="' + wordday + '" class="DateHeader' + (weekday == 0 || weekday == 6 ? ' Weekend' : '') + '"><span>' + wordday + '</span></th>');
 		}
 		
 		headRow = jQuery("<thead id=\"CalendarHead\"></thead>").css({ "height" : defaults.headerHeight + "px" }).append(headRow);
 		headRow = headRow.prepend(navRow);
+		return headRow;
+	};
+	
+	
+	
+	jQuery.J.DrawCalendar = function(dateIn){
+		var now = new Date();
+		now.setHours(0,0,0,0);
+		
+		var today = defaults.calendarStartDate;
+		
+		ClearBoxes();
+		
+		InitDates(dateIn);
+		var headerRow = InitHeaders();
+		
+		//properties
+		var isCurrentMonth = (_workingDate.getMonth() == today.getMonth() && _workingDate.getFullYear() == today.getFullYear());
+		var containerHeight = jQuery(defaults.containerId).outerHeight();
+		var rowHeight = (containerHeight - defaults.headerHeight) / _gridRows;
+		var row = null;
 
-
+		alert("container height: " + containerHeight);		
+		alert("header height: " + defaults.headerHeight);
+		alert("rowHeight=" + rowHeight);
+		
+		
 		//Build up the Body
 		var tBody = jQuery('<tbody id="CalendarBody"></tbody>');
-		var isCurrentMonth = (d.getMonth() == today.getMonth() && d.getFullYear() == today.getFullYear());
-		var maxDays = Date.getDaysInMonth(d.getFullYear(), d.getMonth());
-		alert("maxDays: " + maxDays);
 		
-		//what is the current day #
-		var curDay = defaults.firstDayOfWeek - d.getDay();
-		if (curDay > 0) curDay -= 7
-		//alert(curDay);
-		
-		var t = (maxDays + Math.abs(curDay));
-
-		_beginDate = new Date(d.getFullYear(), d.getMonth(), curDay+1);
-		_endDate = new Date(d.getFullYear(), d.getMonth()+1, (7-(t %= 7)) == 7 ? 0 : (7-(t %= 7)));
-		var _currentDate = new Date(_beginDate.getFullYear(), _beginDate.getMonth(), _beginDate.getDate());
-
-		
-		// Render calendar
-		var rowCount = 0;
-		var containerHeight = jQuery(defaults.containerId).outerHeight();
-		//alert("container height: " + containerHeight);		
-		//alert("header height: " + defaults.headerHeight);
-		
-		var rowHeight = (containerHeight - defaults.headerHeight) / Math.ceil((maxDays + Math.abs(curDay)) / 7);
-		//alert("rowHeight=" + rowHeight);
-
-
-		do {
-	  		var thisRow = jQuery("<tr></tr>");
-			thisRow.css({
-				"height" : rowHeight + "px"
-			});
-			
-			for (var i=0; i<7; i++) {
-				var weekday = (defaults.firstDayOfWeek + i) % 7;
-				var atts = {'class':"DateBox" + (weekday == 0 || weekday == 6 ? ' Weekend ' : ''),
-							'date':_currentDate.toString("M/d/yyyy"),
-							'id': getDateId(_currentDate)
-				};
-
-				if (curDay < 0 || curDay >= maxDays) {
-					atts['class'] += ' Inactive';
-				} else {
-					d.setDate(curDay+1);
-				}
-					
-				if (isCurrentMonth && curDay+1 == today.getDate()) {
-					dayStr = curDay+1;
-					atts['class'] += ' Today';
-				}
-				
-				//DateBox Events
-				var dateLink = jQuery('<div class="DateLabel"><a href="">' + _currentDate.getDate() + '</a></div>').click(function(e) {
-                    defaults.onDayLinkClick(new Date($(this).parent().attr("date")));
-                    e.stopPropagation();
-                });
-				
-				var dateBox = jQuery("<td></td>").attr(atts).append(dateLink).dblclick(function(e) {
-                    defaults.onDayCellDblClick(new Date($(this).attr("date")));
-                    e.stopPropagation();
-                }).click(function(e) {
-					defaults.onDayCellClick(new Date($(this).attr("date")));
-                    e.stopPropagation();
-				});
-				
-				if (defaults.dragableEvents) {
-                    dateBox.droppable({
-                        hoverClass: defaults.hoverDroppableClass,
-                        activeClass: defaults.activeDroppableClass,
-                        drop: function(e, ui) {
-                            ui.draggable.attr("style", "position: relative; display: block;");
-                            $(this).append(ui.draggable);
-                            var event;
-                            $.each(calendarEvents, function() {
-                                if (this.EventID == ui.draggable.attr("id")) {
-                                    event = this;
-                                }
-                            });
-                            defaults.onEventDropped(event, $(this).attr("date"));
-							return false;
-                        }
-                    });
-                }
-				
-				_boxes.push(new DateBox(getDateId(_currentDate), _currentDate.clone(), dateBox, dateLink));
-				thisRow.append(dateBox);
-				
-				curDay++;
-				_currentDate.addDays(1);
+		for (var i = 0; i < _totalBoxes; i++) {
+			var currentDate = _dateRange.startDate.clone().addDays(i);
+			if (i % 7 == 0 || i == 0) {
+				row = jQuery("<tr></tr>");
+				row.css({ "height" : rowHeight + "px" });
+				tBody.append(row);
 			}
 			
-			rowCount++;
-			tBody.append(thisRow);
-		} while (curDay < maxDays);
+			var weekday = (defaults.firstDayOfWeek + i) % 7;
+			var atts = {'class':"DateBox" + (weekday == 0 || weekday == 6 ? ' Weekend ' : ''),
+						'date':currentDate.toString("M/d/yyyy"),
+						'id': getDateId(currentDate)
+			};
+			
+			//dates outside of month range.
+			if (currentDate.compareTo(_firstOfMonth) == -1 || currentDate.compareTo(_lastOfMonth) == 1) {
+				atts['class'] += ' Inactive';
+			}
+			
+			//check to see if current date rendering is today
+			if (currentDate.compareTo(now) == 0) { 
+				atts['class'] += ' Today';
+			}
+			
+			//DateBox Events
+			var dateLink = jQuery('<div class="DateLabel"><a href="">' + currentDate.getDate() + '</a></div>').click(function(e) {
+				defaults.onDayLinkClick(new Date($(this).parent().attr("date")));
+				e.stopPropagation();
+			});
+			
+			var dateBox = jQuery("<td></td>").attr(atts).append(dateLink).dblclick(function(e) {
+				defaults.onDayCellDblClick(new Date($(this).attr("date")));
+				e.stopPropagation();
+			}).click(function(e) {
+				defaults.onDayCellClick(new Date($(this).attr("date")));
+				e.stopPropagation();
+			});
+			
+			if (defaults.dragableEvents) {
+				dateBox.droppable({
+					hoverClass: defaults.hoverDroppableClass,
+					activeClass: defaults.activeDroppableClass,
+					drop: function(e, ui) {
+						ui.draggable.attr("style", "position: relative; display: block;");
+						$(this).append(ui.draggable);
+						var event;
+						$.each(calendarEvents, function() {
+							if (this.EventID == ui.draggable.attr("id")) {
+								event = this;
+							}
+						});
+						defaults.onEventDropped(event, $(this).attr("date"));
+						return false;
+					}
+				});
+			}
+			
+			_boxes.push(new DateBox(i, currentDate, dateBox, dateLink));
+			row.append(dateBox);
+		}
+		tBody.append(row);
 
-
-		var a = jQuery(defaults.containerId);//.css({ "width" : defaults.width + "px", "height" : defaults.height + "px" });
-		var cal = jQuery('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>').append(headRow, tBody);
+		var a = jQuery(defaults.containerId);
+		var cal = jQuery('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>').append(headerRow, tBody);
 		
 		a.hide();
 		a.html(cal);
@@ -352,7 +364,7 @@
 				
 				
 				if(sDt) {
-					if (sDt.between(_beginDate, _endDate)) {
+					if (sDt.between(_dateRange.startDate, _dateRange.endDate)) {
 					
 						var multi = false;
 						var daysBetween = 0;
