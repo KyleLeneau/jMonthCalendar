@@ -12,6 +12,7 @@
 	var _beginDate;
 	var _endDate;
 	var _boxes = [];
+	var _eventObj = {};
 	
 	var _workingDate = null;
 	var _daysInMonth = 0;
@@ -24,7 +25,7 @@
 	var _dateRange = { startDate: null, endDate: null };
 	
 	
-	var calendarEvents;
+	var calendarEvents = [];
 	var defaults = {
 			containerId: "#jMonthCalendar",
 			headerHeight: 50,
@@ -39,7 +40,8 @@
 				enablePrevYear: true,
 				p:'&lsaquo; Prev', 
 				n:'Next &rsaquo;', 
-				t:'Today'
+				t:'Today',
+				showMore: 'Show More'
 			},
 			onMonthChanging: function(dateIn) { return true; },
 			onMonthChanged: function(dateIn) { return true; },
@@ -146,6 +148,7 @@
 			_boxes[i].clear();
 		}
 		_boxes = [];
+		_eventObj = {};
 	};
 	
 	var InitDates = function(dateIn) {
@@ -162,7 +165,7 @@
 		_daysInMonth = _workingDate.getDaysInMonth();  //alert("days in month: " + _daysInMonth);
 		_firstOfMonth = _workingDate.clone().moveToFirstDayOfMonth();  //alert("first day of month: " + _firstOfMonth);
 		_lastOfMonth = _workingDate.clone().moveToLastDayOfMonth();  //alert("last day of month: " + _lastOfMonth);
-		_gridOffset = _firstOfMonth.getDay();  //alert("offset: " + _gridOffset);
+		_gridOffset = _firstOfMonth.getDay() - defaults.firstDayOfWeek;  //alert("offset: " + _gridOffset);
 		_totalDates = _gridOffset + _daysInMonth;  //alert("total dates: " + _totalDates);
 		_gridRows = Math.ceil(_totalDates / 7);  //alert("grid rows: " + _gridRows);
 		_totalBoxes = _gridRows * 7;  //alert("total boxes: " + _totalBoxes);
@@ -248,7 +251,7 @@
 	
 	jQuery.J.DrawCalendar = function(dateIn){
 		var now = new Date();
-		now.setHours(0,0,0,0);
+		now.clearTime();
 		
 		var today = defaults.calendarStartDate;
 		
@@ -263,11 +266,6 @@
 		var rowHeight = (containerHeight - defaults.headerHeight) / _gridRows;
 		var row = null;
 
-		alert("container height: " + containerHeight);		
-		alert("header height: " + defaults.headerHeight);
-		alert("rowHeight=" + rowHeight);
-		
-		
 		//Build up the Body
 		var tBody = jQuery('<tbody id="CalendarBody"></tbody>');
 		
@@ -297,15 +295,15 @@
 			
 			//DateBox Events
 			var dateLink = jQuery('<div class="DateLabel"><a href="">' + currentDate.getDate() + '</a></div>').click(function(e) {
-				defaults.onDayLinkClick(new Date($(this).parent().attr("date")));
+				defaults.onDayLinkClick(currentDate);
 				e.stopPropagation();
 			});
 			
 			var dateBox = jQuery("<td></td>").attr(atts).append(dateLink).dblclick(function(e) {
-				defaults.onDayCellDblClick(new Date($(this).attr("date")));
+				defaults.onDayCellDblClick(currentDate);
 				e.stopPropagation();
 			}).click(function(e) {
-				defaults.onDayCellClick(new Date($(this).attr("date")));
+				defaults.onDayCellClick(currentDate);
 				e.stopPropagation();
 			});
 			
@@ -322,13 +320,13 @@
 								event = this;
 							}
 						});
-						defaults.onEventDropped(event, $(this).attr("date"));
+						defaults.onEventDropped(event, new Date($(this).attr("date")));
 						return false;
 					}
 				});
 			}
 			
-			_boxes.push(new DateBox(i, currentDate, dateBox, dateLink));
+			_boxes.push(new CalendarBox(i, currentDate, dateBox, dateLink));
 			row.append(dateBox);
 		}
 		tBody.append(row);
@@ -347,124 +345,107 @@
 		//filter the JSON array for proper dates
 		FilterEventCollection();
 		
-		//for(var i = 0; i < _boxes.length; i++) {
-		//	_boxes[i].echo();
-		//}
-		
 		if (calendarEvents && calendarEvents.length > 0) {
-			var label = jQuery(".DateLabel:first", defaults.containerId);
-			var container = jQuery(defaults.containerId);
-			
+			var container = jQuery(defaults.containerId);			
 			
 			jQuery.each(calendarEvents, function(){
-				var ev = this;				
-				//Date Parse the JSON to create a new Date to work with here
-				var sDt = ev.StartDateTime;
-				var eDt = ev.EndDateTime;
+				var ev = this;
+				
+				var tempStartDT = ev.StartDateTime.clone().clearTime();
+				var tempEndDT = ev.EndDateTime.clone().clearTime();
+				
+				var startI = new TimeSpan(tempStartDT - _dateRange.startDate).days;
+				var endI = new TimeSpan(tempEndDT - _dateRange.startDate).days;
+				//alert("start I: " + startI + " end I: " + endI);
+				
+				var istart = (startI < 0) ? 0 : startI;
+				var iend = (endI > _boxes.length - 1) ? _boxes.length - 1 : endI;
+				//alert("istart: " + istart + " iend: " + iend);
 				
 				
-				if(sDt) {
-					if (sDt.between(_dateRange.startDate, _dateRange.endDate)) {
+				for (var i = istart; i <= iend; i++) {
+					var b = _boxes[i];
+
+					var startBoxCompare = ev.StartDateTime.compareTo(b.date);
+					var endBoxCompare = ev.EndDateTime.compareTo(b.date);
 					
-						var multi = false;
-						var daysBetween = 0;
-						//One Day in Milliseconds
-						var oneDay = 1000 * 60 * 60 * 24;
+					var continueEvent = (i != 0 && startBoxCompare == -1 && endBoxCompare >= 0 && b.weekNumber != _boxes[i - 1].weekNumber);
+					var toManyEvents = (startBoxCompare == 0 || (i == 0 && startBoxCompare == -1) || 
+										continueEvent || (startBoxCompare == -1 && endBoxCompare >= 0)) && b.vOffset >= (b.getCellBox().height() - 32); //todo: find height of boxes or more link.
+					
+					//alert(continueEvent);
+					//alert(toManyEvents);
+					
+					if (toManyEvents) {
+						if (!b.isTooManySet) {
+							var moreDiv = jQuery('<div class="MoreEvents" id="ME_' + i + '">' + defaults.navLinks.showMore + '</div>');
+							var pos = b.getCellPosition();
+
+							moreDiv.css({ "top" : pos.top + b.getLabelHeight() + b.vOffset, "left" : pos.left, "width" : b.getLabelWidth() - 7 });
+							
+							//TODO: add click event handler in order to display events for the box (pass box event array) ?? display
+							
+							_eventObj[moreDiv.attr("id")] = moreDiv;
+							b.isTooManySet = true;
+						}						
+						b.events.push(ev);
+					} else if (startBoxCompare == 0 || (i == 0 && startBoxCompare == -1) || continueEvent) {
+						var block = _buildEventBlock(ev, b.weekNumber);						
+						var pos = b.getCellPosition();
 						
-						if (eDt.compareTo(sDt) == 1) {
-							daysBetween = (eDt - sDt) / oneDay;
+						block.css({ "top" : pos.top + b.getLabelHeight() + b.vOffset, "left" : pos.left, "width" : b.getLabelWidth() - 7});
+						
+						if (continueEvent) {
+							block.prepend(jQuery('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-w"));
+							
+							var e = _eventObj['Event_' + ev.EventID + '_' + (b.weekNumber - 1)];
+							if (e) { e.prepend(jQuery('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-e")); }
 						}
-						if (daysBetween >= 1) {
-							multi = true;
-							alert("multi day event: " + daysBetween);
-							RenderMultiDayEvent(daysBetween, ev);
-						} else {
-							RenderSingleDayEvent(ev);
+						
+						_eventObj[block.attr("id")] = block;
+						
+						b.events.push(ev);
+					} else if (startBoxCompare == -1 && endBoxCompare >= 0) {
+						var e = _eventObj['Event_' + ev.EventID + '_' + b.weekNumber];
+						if (e) {
+							var w = e.css("width")
+							e.css({ "width" : (parseInt(w) + b.getLabelWidth() + 1) });
+							b.vOffset = e.vOffset
+							b.events.push(ev);
 						}
-					}
+					}					
 				}
 			});
+			
+			for (var o in _eventObj) {
+				_eventObj[o].hide();
+				container.append(_eventObj[o]);
+				_eventObj[o].fadeIn("normal");
+			}
 		}
 	}
 	
-	var RenderSingleDayEvent = function(ev) {
-		var container = jQuery(defaults.containerId);
-		var label = jQuery(".DateLabel:first", defaults.containerId);
+	var _buildEventBlock = function(event, weekNumber) {
+		var block = jQuery('<div class="Event" id="Event_' + event.EventID + '_' + weekNumber + '"></div>');
 		
-		var cell = jQuery("#" + getDateId(ev.StartDateTime), jQuery(defaults.containerId));
-		var pos = cell.position();
+		if(event.CssClass) { block.addClass(event.CssClass) }
+		block.click(function(e) { defaults.onEventBlockClick(event); e.stopPropagation(); });
+		block.hover(function() { defaults.onEventBlockOver(event); }, function() { defaults.onEventBlockOut(event); })
+		if (defaults.dragableEvents) { block.draggable({ containment: '#CalendarBody' }); }
 		
-		var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>');		
-		event.css({ "top" : pos.top + label.height(), "left" : pos.left, "width" : label.innerWidth() - 7 });		
+		var link = jQuery('<a href="' + event.URL + '">' + event.Title + '</a>');
+		link.click(function(e) { defaults.onEventLinkClick(event); e.stopPropagation();	});
 		
-		var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
-		link.click(function(e) {
-			defaults.onEventLinkClick(ev);
-			e.stopPropagation();
-		});
-		event.append(link);
+		block.append(link);
 		
-		if(ev.CssClass) { event.addClass(ev.CssClass) }
-		event.click(function(e) { 
-			defaults.onEventBlockClick(ev); 
-			e.stopPropagation(); 
-		});
-		event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
-		
-		if (defaults.dragableEvents) {
-			event.draggable({ containment: '#CalendarBody' });
-		}
-		
-		event.hide();
-		container.append(event);
-		event.fadeIn("normal");
-	}
-	
-	var RenderMultiDayEvent = function(daysBetween, ev) {
-		var container = jQuery(defaults.containerId);
-		var label = jQuery(".DateLabel:first", defaults.containerId);
-		
-		var cell = jQuery("#" + getDateId(ev.StartDateTime), jQuery(defaults.containerId));
-		var pos = cell.position();
-		
-		//get the position and width of the event
-		var top = pos.top + label.height();
-		var left = pos.left;
-		var width = (label.innerWidth() * (daysBetween + 1)) - (7 - daysBetween);
-	
-	
-		var event = jQuery('<div class="Event" id="Event_' + ev.EventID + '"></div>');		
-		event.css({ "top" : top, "left" : left, "width" : width });
-	
-	
-		var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
-		link.click(function(e) {
-			defaults.onEventLinkClick(ev);
-			e.stopPropagation();
-		});
-		event.append(link);
-		
-		if(ev.CssClass) { event.addClass(ev.CssClass) }
-		event.click(function(e) { 
-			defaults.onEventBlockClick(ev); 
-			e.stopPropagation(); 
-		});
-		event.hover(function() { defaults.onEventBlockOver(ev); }, function() { defaults.onEventBlockOut(ev); })
-		
-		if (defaults.dragableEvents) {
-			event.draggable({ containment: '#CalendarBody' });
-		}
-		
-		event.hide();
-		container.append(event);
-		event.fadeIn("normal");
-	}
-	
+		return block;
+	}	
 
 	
 	jQuery.J.ClearEventsOnCalendar = function() {
 		ClearBoxes();
 		jQuery(".Event", jQuery(defaults.containerId)).remove();
+		jQuery(".MoreEvents", jQuery(defaults.containerId)).remove();
 	}
 	
 	jQuery.J.AddEvents = function(eventCollection) {
@@ -507,16 +488,18 @@
 })(jQuery);
 
 
-function DateBox(id, boxDate, cell, label) {
+function CalendarBox(id, boxDate, cell, label) {
 	this.id = id;
 	this.date = boxDate;
 	this.cell = cell;
 	this.label = label;
+	this.weekNumber = Math.floor(id / 7);
 	this.events= [];
 	this.isTooMannySet = false;
+	this.vOffset = 0;
 	
 	this.echo = function() {
-		alert(this.date);
+		alert("Date: " + this.date + " WeekNumber: " + this.weekNumber + " ID: " + this.id);
 	}
 	
 	this.clear = function() {
@@ -525,17 +508,30 @@ function DateBox(id, boxDate, cell, label) {
 	}
 	
 	this.getCellPosition = function() {
-		if (!this.cell) { return this.cell.position(); }
+		if (this.cell) { 
+			return this.cell.position();
+		}
 		return;
 	}
 	
 	this.getCellBox = function() {
-		if (!this.cell) { return this.cell; }
+		if (this.cell) { 
+			return this.cell;
+		}
+		return;
+	}
+	
+	this.getLabelWidth = function() {
+		if (this.label) {
+			return this.label.innerWidth();
+		}
 		return;
 	}
 	
 	this.getLabelHeight = function() {
-		if (!this.label) { return this.label.height(); }
+		if (this.label) { 
+			return this.label.height();
+		}
 		return;
 	}
 	

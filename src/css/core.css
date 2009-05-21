@@ -102,6 +102,17 @@ a
 	background:#A9DFFF none repeat scroll 0 0;
 }
 
+#jMonthCalendar .MoreEvents
+{
+	font-size:12px;
+	padding:1px 1px 1px 4px;
+	margin-bottom:1px;
+	cursor:pointer;
+	display:block;
+	position:absolute;
+	text-align:center;
+}
+
 #jMonthCalendar .Event
 {
 	font-size:12px;
@@ -119,10 +130,8 @@ a
 {
 	text-decoration:none;
 	color:#000;
+	float:left;
 }
-
-.Event a:hover
-{
-	text-decoration:underline;
-}
-
+.Event a:hover { text-decoration:underline; }
+.Event span.ui-icon-triangle-1-w { float:left; }
+.Event span.ui-icon-triangle-1-e { float:right; }
