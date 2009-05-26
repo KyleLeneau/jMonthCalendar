@@ -369,7 +369,7 @@
 					var startBoxCompare = ev.StartDateTime.compareTo(b.date);
 					var endBoxCompare = ev.EndDateTime.compareTo(b.date);
 					
-					var continueEvent = (i != 0 && startBoxCompare == -1 && endBoxCompare >= 0 && b.weekNumber != _boxes[i - 1].weekNumber);
+					var continueEvent = ((i != 0 && startBoxCompare == -1 && endBoxCompare >= 0 && b.weekNumber != _boxes[i - 1].weekNumber) || (i == 0 && startBoxCompare == -1));
 					var toManyEvents = (startBoxCompare == 0 || (i == 0 && startBoxCompare == -1) || 
 										continueEvent || (startBoxCompare == -1 && endBoxCompare >= 0)) && b.vOffset >= (b.getCellBox().height() - 32); //todo: find height of boxes or more link.
 					
@@ -413,7 +413,13 @@
 							b.vOffset = e.vOffset
 							b.events.push(ev);
 						}
-					}					
+					}
+					
+					//end of month continue
+					if (i == iend && endBoxCompare > 0) {
+						var e = _eventObj['Event_' + ev.EventID + '_' + b.weekNumber];
+						if (e) { e.prepend(jQuery('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-e")); }
+					}
 				}
 			});
 			
