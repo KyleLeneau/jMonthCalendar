@@ -4,5 +4,7 @@ Multiday event cases:
 		A. Event start in the prior month (currently event is displayed if start date is between the visble dates, wont work, need to change).
 		B. Event starts in current month but caries over to next month.
 	3. Event stacking for more than one event on a given day (multi day events rendered first, then single, how about in order of time?)
+	
 	4. More events than visible, when and how to position and how to display "more" (popup, qTip?)
+	
 	5. Drag and Drop of multiday events

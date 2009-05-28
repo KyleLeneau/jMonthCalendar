@@ -98,9 +98,9 @@
 			var stdReg = /^\\\/Date\(([0-9]{13})-([0-9]{4})\)\\\/$/;
 			
 			if (k = jsonDateString.match(isoRegPlus)) {
-				return new Date(k[1],k[2]-1,k[3]);
+				return new Date(k[1],k[2]-1,k[3],k[4],k[5],k[6]);
 			} else if (k = jsonDateString.match(isoReg)) {
-				return new Date(k[1],k[2]-1,k[3]);
+				return new Date(k[1],k[2]-1,k[3],k[4],k[5],k[6]);
 			} else if (k = jsonDateString.match(yyyyMMdd)) {
 				return new Date(k[1],k[2]-1,k[3]);
 			}
@@ -120,6 +120,10 @@
 	//This function will clean the JSON array, primaryly the dates and put the correct ones in the object.  Intended to alwasy be called on event functions.
 	var FilterEventCollection = function() {
 		if (calendarEvents && calendarEvents.length > 0) {
+			var multi = [];
+			var single = [];
+			
+			//Update and parse all the dates
 			jQuery.each(calendarEvents, function(){
 				var ev = this;
 				//Date Parse the JSON to create a new Date to work with here				
@@ -137,10 +141,26 @@
 					if (typeof ev.EndDateTime == 'object' && ev.EndDateTime.getDate) { this.EndDateTime = ev.EndDateTime; }
 					if (typeof ev.EndDateTime == 'string' && ev.EndDateTime.split) { this.EndDateTime = GetJSONDate(ev.EndDateTime); }
 				} else {
-					this.EndDateTime = ev.StartDateTime;
+					this.EndDateTime = this.StartDateTime;
+				}
+				
+				if (this.StartDateTime.clone().clearTime().compareTo(this.EndDateTime.clone().clearTime()) == 0) {
+					single.push(this);
+				} else if (this.StartDateTime.clone().clearTime().compareTo(this.EndDateTime.clone().clearTime()) == -1) {
+					multi.push(this);
 				}
 			});
+			
+			multi.sort(_eventSort);
+			single.sort(_eventSort);
+			calendarEvents = [];
+			jQuery.merge(calendarEvents, multi);
+			jQuery.merge(calendarEvents, single);
 		}
+	};
+	
+	var _eventSort = function(a, b) {
+		return a.StartDateTime.compareTo(b.StartDateTime);
 	};
 	
 	var ClearBoxes = function() {
@@ -307,24 +327,24 @@
 				e.stopPropagation();
 			});
 			
-			if (defaults.dragableEvents) {
-				dateBox.droppable({
-					hoverClass: defaults.hoverDroppableClass,
-					activeClass: defaults.activeDroppableClass,
-					drop: function(e, ui) {
-						ui.draggable.attr("style", "position: relative; display: block;");
-						$(this).append(ui.draggable);
-						var event;
-						$.each(calendarEvents, function() {
-							if (this.EventID == ui.draggable.attr("id")) {
-								event = this;
-							}
-						});
-						defaults.onEventDropped(event, new Date($(this).attr("date")));
-						return false;
-					}
-				});
-			}
+			//if (defaults.dragableEvents) {
+			//	dateBox.droppable({
+			//		hoverClass: defaults.hoverDroppableClass,
+			//		activeClass: defaults.activeDroppableClass,
+			//		drop: function(e, ui) {
+			//			ui.draggable.attr("style", "position: relative; display: block;");
+			//			$(this).append(ui.draggable);
+			//			var event;
+			//			$.each(calendarEvents, function() {
+			//				if (this.EventID == ui.draggable.attr("id")) {
+			//					event = this;
+			//				}
+			//			});
+			//			defaults.onEventDropped(event, new Date($(this).attr("date")));
+			//			return false;
+			//		}
+			//	});
+			//}
 			
 			_boxes.push(new CalendarBox(i, currentDate, dateBox, dateLink));
 			row.append(dateBox);
@@ -350,6 +370,7 @@
 			
 			jQuery.each(calendarEvents, function(){
 				var ev = this;
+				//alert("eventID: " + ev.EventID + ", start: " + ev.StartDateTime + ",end: " + ev.EndDateTime);
 				
 				var tempStartDT = ev.StartDateTime.clone().clearTime();
 				var tempEndDT = ev.EndDateTime.clone().clearTime();
@@ -366,13 +387,14 @@
 				for (var i = istart; i <= iend; i++) {
 					var b = _boxes[i];
 
-					var startBoxCompare = ev.StartDateTime.compareTo(b.date);
-					var endBoxCompare = ev.EndDateTime.compareTo(b.date);
-					
+					var startBoxCompare = tempStartDT.compareTo(b.date);
+					var endBoxCompare = tempEndDT.compareTo(b.date);
+
 					var continueEvent = ((i != 0 && startBoxCompare == -1 && endBoxCompare >= 0 && b.weekNumber != _boxes[i - 1].weekNumber) || (i == 0 && startBoxCompare == -1));
 					var toManyEvents = (startBoxCompare == 0 || (i == 0 && startBoxCompare == -1) || 
-										continueEvent || (startBoxCompare == -1 && endBoxCompare >= 0)) && b.vOffset >= (b.getCellBox().height() - 32); //todo: find height of boxes or more link.
+										continueEvent || (startBoxCompare == -1 && endBoxCompare >= 0)) && b.vOffset >= (b.getCellBox().height() - b.getLabelHeight() - 32); //todo: find height of boxes or more link.
 					
+					//alert("b.vOffset: " + b.vOffset + ", cell height: " + (b.getCellBox().height() - b.getLabelHeight() - 32));
 					//alert(continueEvent);
 					//alert(toManyEvents);
 					
@@ -381,7 +403,7 @@
 							var moreDiv = jQuery('<div class="MoreEvents" id="ME_' + i + '">' + defaults.navLinks.showMore + '</div>');
 							var pos = b.getCellPosition();
 
-							moreDiv.css({ "top" : pos.top + b.getLabelHeight() + b.vOffset, "left" : pos.left, "width" : b.getLabelWidth() - 7 });
+							moreDiv.css({ "top" : pos.top + (b.getCellBox().height() - b.getLabelHeight()), "left" : pos.left, "width" : b.getLabelWidth() - 7 });
 							
 							//TODO: add click event handler in order to display events for the box (pass box event array) ?? display
 							
@@ -394,6 +416,8 @@
 						var pos = b.getCellPosition();
 						
 						block.css({ "top" : pos.top + b.getLabelHeight() + b.vOffset, "left" : pos.left, "width" : b.getLabelWidth() - 7});
+						
+						b.vOffset += 19;
 						
 						if (continueEvent) {
 							block.prepend(jQuery('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-w"));
@@ -410,7 +434,7 @@
 						if (e) {
 							var w = e.css("width")
 							e.css({ "width" : (parseInt(w) + b.getLabelWidth() + 1) });
-							b.vOffset = e.vOffset
+							b.vOffset += 19;
 							b.events.push(ev);
 						}
 					}
@@ -437,7 +461,7 @@
 		if(event.CssClass) { block.addClass(event.CssClass) }
 		block.click(function(e) { defaults.onEventBlockClick(event); e.stopPropagation(); });
 		block.hover(function() { defaults.onEventBlockOver(event); }, function() { defaults.onEventBlockOut(event); })
-		if (defaults.dragableEvents) { block.draggable({ containment: '#CalendarBody' }); }
+		//if (defaults.dragableEvents) { block.draggable({ containment: '#CalendarBody' }); }
 		
 		var link = jQuery('<a href="' + event.URL + '">' + event.Title + '</a>');
 		link.click(function(e) { defaults.onEventLinkClick(event); e.stopPropagation();	});
