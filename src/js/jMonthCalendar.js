@@ -31,7 +31,7 @@
 			headerHeight: 50,
 			firstDayOfWeek: 0,
 			calendarStartDate:new Date(),
-			dragableEvents: false,
+			dragableEvents: true,
 			activeDroppableClass: false,
 			hoverDroppableClass: false,
 			navLinks: {
@@ -163,11 +163,15 @@
 		return a.StartDateTime.compareTo(b.StartDateTime);
 	};
 	
-	var ClearBoxes = function() {
+	var _clearBoxes = function() {
+		_clearBoxEvents();
+		_boxes = [];
+	};
+	
+	var _clearBoxEvents = function() {
 		for (var i = 0; i < _boxes.length; i++) {
 			_boxes[i].clear();
 		}
-		_boxes = [];
 		_eventObj = {};
 	};
 	
@@ -275,7 +279,7 @@
 		
 		var today = defaults.calendarStartDate;
 		
-		ClearBoxes();
+		_clearBoxes();
 		
 		InitDates(dateIn);
 		var headerRow = InitHeaders();
@@ -327,24 +331,41 @@
 				e.stopPropagation();
 			});
 			
-			//if (defaults.dragableEvents) {
-			//	dateBox.droppable({
-			//		hoverClass: defaults.hoverDroppableClass,
-			//		activeClass: defaults.activeDroppableClass,
-			//		drop: function(e, ui) {
-			//			ui.draggable.attr("style", "position: relative; display: block;");
-			//			$(this).append(ui.draggable);
-			//			var event;
-			//			$.each(calendarEvents, function() {
-			//				if (this.EventID == ui.draggable.attr("id")) {
-			//					event = this;
-			//				}
-			//			});
-			//			defaults.onEventDropped(event, new Date($(this).attr("date")));
-			//			return false;
-			//		}
-			//	});
-			//}
+			if (defaults.dragableEvents) {
+				dateBox.droppable({
+					hoverClass: 'DateBoxOver',
+					activeClass: defaults.activeDroppableClass,
+					tolerance: 'pointer',
+					drop: function(ev, ui) {
+						var eventId = ui.draggable.attr("eventid")
+						var newDate = new Date(jQuery(this).attr("date"));
+						alert("new Date: " + newDate);
+						var event;
+						jQuery.each(calendarEvents, function() {
+							if (this.EventID == eventId) {
+								alert("Before start: " + this.StartDateTime);
+								alert("Before end: " + this.EndDateTime);
+								
+								var days = new TimeSpan(newDate - this.StartDateTime).days;
+								this.StartDateTime.addDays(days);
+								this.EndDateTime.addDays(days);
+								
+								alert("After start: " + this.StartDateTime);
+								alert("After end: " + this.EndDateTime);
+								
+								alert("days moved: " + days);
+								event = this;
+							}
+						});
+						
+						jQuery.J.ClearEventsOnCalendar();
+						DrawEventsOnCalendar();
+						
+						defaults.onEventDropped(event, newDate);
+					}
+				});
+			}
+
 			
 			_boxes.push(new CalendarBox(i, currentDate, dateBox, dateLink));
 			row.append(dateBox);
@@ -364,6 +385,7 @@
 	var DrawEventsOnCalendar = function() {
 		//filter the JSON array for proper dates
 		FilterEventCollection();
+		_clearBoxEvents();
 		
 		if (calendarEvents && calendarEvents.length > 0) {
 			var container = jQuery(defaults.containerId);			
@@ -403,7 +425,11 @@
 							var moreDiv = jQuery('<div class="MoreEvents" id="ME_' + i + '">' + defaults.navLinks.showMore + '</div>');
 							var pos = b.getCellPosition();
 
-							moreDiv.css({ "top" : pos.top + (b.getCellBox().height() - b.getLabelHeight()), "left" : pos.left, "width" : b.getLabelWidth() - 7 });
+							moreDiv.css({ 
+								"top" : (pos.top + (b.getCellBox().height() - b.getLabelHeight())), 
+								"left" : pos.left, 
+								"width" : (b.getLabelWidth() - 7),
+								"position" : "absolute" });
 							
 							//TODO: add click event handler in order to display events for the box (pass box event array) ?? display
 							
@@ -415,7 +441,11 @@
 						var block = _buildEventBlock(ev, b.weekNumber);						
 						var pos = b.getCellPosition();
 						
-						block.css({ "top" : pos.top + b.getLabelHeight() + b.vOffset, "left" : pos.left, "width" : b.getLabelWidth() - 7});
+						block.css({ 
+							"top" : (pos.top + b.getLabelHeight() + b.vOffset), 
+							"left" : pos.left, 
+							"width" : (b.getLabelWidth() - 7), 
+							"position" : "absolute" });
 						
 						b.vOffset += 19;
 						
@@ -450,18 +480,20 @@
 			for (var o in _eventObj) {
 				_eventObj[o].hide();
 				container.append(_eventObj[o]);
-				_eventObj[o].fadeIn("normal");
+				_eventObj[o].show();
 			}
 		}
 	}
 	
 	var _buildEventBlock = function(event, weekNumber) {
-		var block = jQuery('<div class="Event" id="Event_' + event.EventID + '_' + weekNumber + '"></div>');
+		var block = jQuery('<div class="Event" id="Event_' + event.EventID + '_' + weekNumber + '" eventid="' + event.EventID +'"></div>');
 		
 		if(event.CssClass) { block.addClass(event.CssClass) }
 		block.click(function(e) { defaults.onEventBlockClick(event); e.stopPropagation(); });
 		block.hover(function() { defaults.onEventBlockOver(event); }, function() { defaults.onEventBlockOut(event); })
-		//if (defaults.dragableEvents) { block.draggable({ containment: '#CalendarBody' }); }
+		if (defaults.dragableEvents) {
+			_dragableEvent(event, block, weekNumber);
+		}
 		
 		var link = jQuery('<a href="' + event.URL + '">' + event.Title + '</a>');
 		link.click(function(e) { defaults.onEventLinkClick(event); e.stopPropagation();	});
@@ -471,9 +503,30 @@
 		return block;
 	}	
 
+	var _dragableEvent = function(event, block, weekNumber) {
+		block.draggable({
+			zIndex: 4,
+			delay: 50,
+			opacity: 0.5,
+			revertDuration: 1000,
+			cursorAt: { left: 5 },
+			start: function(ev, ui) {
+				//hide any additional event parts
+				for (var i = 0; i <= _gridRows; i++) {
+					if (i == weekNumber) {
+						continue;
+					}
+					
+					var e = _eventObj['Event_' + event.EventID + '_' + i];
+					if (e) { e.hide(); }
+				}
+			}
+		});
+	}
+	
 	
 	jQuery.J.ClearEventsOnCalendar = function() {
-		ClearBoxes();
+		_clearBoxEvents();
 		jQuery(".Event", jQuery(defaults.containerId)).remove();
 		jQuery(".MoreEvents", jQuery(defaults.containerId)).remove();
 	}
@@ -481,11 +534,8 @@
 	jQuery.J.AddEvents = function(eventCollection) {
 		if(eventCollection) {
 			if(eventCollection.length > 1) {
-				jQuery.each(eventCollection, function() {
-					calendarEvents.push(this);
-				});
+				jQuery.merge(calendarEvents, eventCollection);
 			} else {
-				//add new single event to ed of array
 				calendarEvents.push(eventCollection);
 			}
 			jQuery.J.ClearEventsOnCalendar();
@@ -495,8 +545,12 @@
 	
 	jQuery.J.ReplaceEventCollection = function(eventCollection) {
 		if(eventCollection) {
+			calendarEvents = []
 			calendarEvents = eventCollection;
 		}
+		
+		jQuery.J.ClearEventsOnCalendar();
+		DrawEventsOnCalendar();
 	}
 	
 	jQuery.J.ChangeMonth = function(dateIn) {
@@ -535,6 +589,7 @@ function CalendarBox(id, boxDate, cell, label) {
 	this.clear = function() {
 		this.events = [];
 		this.isTooMannySet = false;
+		this.vOffset = 0;
 	}
 	
 	this.getCellPosition = function() {

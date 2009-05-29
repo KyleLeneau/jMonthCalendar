@@ -97,7 +97,7 @@ a
 {
 	background:#fafafa none repeat scroll 0 0;
 }
-.Today
+.Today, #CalendarBody .DateBoxOver
 {
 	background:#A9DFFF none repeat scroll 0 0;
 }
