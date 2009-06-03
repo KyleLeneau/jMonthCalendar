@@ -53,6 +53,7 @@
 			onDayCellClick: function(date) { return true; },
 			onDayCellDblClick: function(dateIn) { return true; },
 			onEventDropped: function(event, newDate) { return true; },
+			onShowMoreClick: function(eventArray) { return true; },
 			locale: {
 				days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 				daysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -65,18 +66,18 @@
 		
 	jQuery.jMonthCalendar = jQuery.J = function() {};
 	
-	var getDateFromId = function(dateIdString) {
+	var _getDateFromId = function(dateIdString) {
 		//c_01012009		
 		return new Date(dateIdString.substring(6, 10), dateIdString.substring(2, 4)-1, dateIdString.substring(4, 6));
 	};
 	
-	var getDateId = function(date) {
+	var _getDateId = function(date) {
 		var month = ((date.getMonth()+1)<10) ? "0" + (date.getMonth()+1) : (date.getMonth()+1);
 		var day = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate();
 		return "c_" + month + day + date.getFullYear();
 	};
 	
-	var GetJSONDate = function(jsonDateString) {
+	var _getJSONDate = function(jsonDateString) {
 		//check conditions for different types of accepted dates
 		var tDt, k;
 		if (typeof jsonDateString == "string") {
@@ -118,7 +119,7 @@
 	};
 	
 	//This function will clean the JSON array, primaryly the dates and put the correct ones in the object.  Intended to alwasy be called on event functions.
-	var FilterEventCollection = function() {
+	var _filterEventCollection = function() {
 		if (calendarEvents && calendarEvents.length > 0) {
 			var multi = [];
 			var single = [];
@@ -129,19 +130,19 @@
 				//Date Parse the JSON to create a new Date to work with here				
 				if(ev.StartDateTime) {
 					if (typeof ev.StartDateTime == 'object' && ev.StartDateTime.getDate) { this.StartDateTime = ev.StartDateTime; }
-					if (typeof ev.StartDateTime == 'string' && ev.StartDateTime.split) { this.StartDateTime = GetJSONDate(ev.StartDateTime); }
+					if (typeof ev.StartDateTime == 'string' && ev.StartDateTime.split) { this.StartDateTime = _getJSONDate(ev.StartDateTime); }
 				} else if(ev.Date) { // DEPRECATED
 					if (typeof ev.Date == 'object' && ev.Date.getDate) { this.StartDateTime = ev.Date; }
-					if (typeof ev.Date == 'string' && ev.Date.split) { this.StartDateTime = GetJSONDate(ev.Date); }
+					if (typeof ev.Date == 'string' && ev.Date.split) { this.StartDateTime = _getJSONDate(ev.Date); }
 				} else {
 					return;  //no start date, or legacy date. no event.
 				}
 				
 				if(ev.EndDateTime) {
 					if (typeof ev.EndDateTime == 'object' && ev.EndDateTime.getDate) { this.EndDateTime = ev.EndDateTime; }
-					if (typeof ev.EndDateTime == 'string' && ev.EndDateTime.split) { this.EndDateTime = GetJSONDate(ev.EndDateTime); }
+					if (typeof ev.EndDateTime == 'string' && ev.EndDateTime.split) { this.EndDateTime = _getJSONDate(ev.EndDateTime); }
 				} else {
-					this.EndDateTime = this.StartDateTime;
+					this.EndDateTime = this.StartDateTime.clone();
 				}
 				
 				if (this.StartDateTime.clone().clearTime().compareTo(this.EndDateTime.clone().clearTime()) == 0) {
@@ -175,7 +176,7 @@
 		_eventObj = {};
 	};
 	
-	var InitDates = function(dateIn) {
+	var _initDates = function(dateIn) {
 		var today = defaults.calendarStartDate;
 		if(dateIn == undefined) {
 			//start from this month
@@ -201,7 +202,7 @@
 		//alert("dateRange enddate: " + _dateRange.endDate);
 	};
 	
-	var InitHeaders = function() {
+	var _initHeaders = function() {
 		// Create Previous Month link for later
 		var prevMonth = _workingDate.clone().addMonths(-1);
 		var prevMLink = jQuery('<div class="MonthNavPrev"><a href="" class="link-prev">'+ defaults.navLinks.p +'</a></div>').click(function() {
@@ -281,8 +282,8 @@
 		
 		_clearBoxes();
 		
-		InitDates(dateIn);
-		var headerRow = InitHeaders();
+		_initDates(dateIn);
+		var headerRow = _initHeaders();
 		
 		//properties
 		var isCurrentMonth = (_workingDate.getMonth() == today.getMonth() && _workingDate.getFullYear() == today.getFullYear());
@@ -304,7 +305,7 @@
 			var weekday = (defaults.firstDayOfWeek + i) % 7;
 			var atts = {'class':"DateBox" + (weekday == 0 || weekday == 6 ? ' Weekend ' : ''),
 						'date':currentDate.toString("M/d/yyyy"),
-						'id': getDateId(currentDate)
+						'id': _getDateId(currentDate)
 			};
 			
 			//dates outside of month range.
@@ -338,34 +339,27 @@
 					tolerance: 'pointer',
 					drop: function(ev, ui) {
 						var eventId = ui.draggable.attr("eventid")
-						var newDate = new Date(jQuery(this).attr("date"));
-						alert("new Date: " + newDate);
+						var newDate = new Date(jQuery(this).attr("date")).clearTime();
+						
 						var event;
 						jQuery.each(calendarEvents, function() {
 							if (this.EventID == eventId) {
-								alert("Before start: " + this.StartDateTime);
-								alert("Before end: " + this.EndDateTime);
-								
 								var days = new TimeSpan(newDate - this.StartDateTime).days;
+								
 								this.StartDateTime.addDays(days);
 								this.EndDateTime.addDays(days);
-								
-								alert("After start: " + this.StartDateTime);
-								alert("After end: " + this.EndDateTime);
-								
-								alert("days moved: " + days);
+																
 								event = this;
 							}
 						});
 						
 						jQuery.J.ClearEventsOnCalendar();
-						DrawEventsOnCalendar();
+						_drawEventsOnCalendar();
 						
 						defaults.onEventDropped(event, newDate);
 					}
 				});
 			}
-
 			
 			_boxes.push(new CalendarBox(i, currentDate, dateBox, dateLink));
 			row.append(dateBox);
@@ -379,12 +373,12 @@
 		a.html(cal);
 		a.fadeIn("normal");
 		
-		DrawEventsOnCalendar();
+		_drawEventsOnCalendar();
 	}
 	
-	var DrawEventsOnCalendar = function() {
+	var _drawEventsOnCalendar = function() {
 		//filter the JSON array for proper dates
-		FilterEventCollection();
+		_filterEventCollection();
 		_clearBoxEvents();
 		
 		if (calendarEvents && calendarEvents.length > 0) {
@@ -424,6 +418,7 @@
 						if (!b.isTooManySet) {
 							var moreDiv = jQuery('<div class="MoreEvents" id="ME_' + i + '">' + defaults.navLinks.showMore + '</div>');
 							var pos = b.getCellPosition();
+							var index = i;
 
 							moreDiv.css({ 
 								"top" : (pos.top + (b.getCellBox().height() - b.getLabelHeight())), 
@@ -431,11 +426,11 @@
 								"width" : (b.getLabelWidth() - 7),
 								"position" : "absolute" });
 							
-							//TODO: add click event handler in order to display events for the box (pass box event array) ?? display
+							moreDiv.click(function(e) { _showMoreClick(e, index); });
 							
 							_eventObj[moreDiv.attr("id")] = moreDiv;
 							b.isTooManySet = true;
-						}						
+						} //else update the +more to show??
 						b.events.push(ev);
 					} else if (startBoxCompare == 0 || (i == 0 && startBoxCompare == -1) || continueEvent) {
 						var block = _buildEventBlock(ev, b.weekNumber);						
@@ -524,6 +519,13 @@
 		});
 	}
 	
+	var _showMoreClick = function(e, boxIndex) {
+		var box = _boxes[boxIndex];
+		defaults.onShowMoreClick(box.events);
+		
+		e.stopPropagation();
+	}
+	
 	
 	jQuery.J.ClearEventsOnCalendar = function() {
 		_clearBoxEvents();
@@ -539,7 +541,7 @@
 				calendarEvents.push(eventCollection);
 			}
 			jQuery.J.ClearEventsOnCalendar();
-			DrawEventsOnCalendar();
+			_drawEventsOnCalendar();
 		}
 	}
 	
@@ -550,7 +552,7 @@
 		}
 		
 		jQuery.J.ClearEventsOnCalendar();
-		DrawEventsOnCalendar();
+		_drawEventsOnCalendar();
 	}
 	
 	jQuery.J.ChangeMonth = function(dateIn) {

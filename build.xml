@@ -25,6 +25,7 @@
 		<concat destfile="${JMC}">
 			<fileset dir="${src.js.dir}" includes="jMonthCalendar.js" />
 			<fileset dir="${src.js.dir}" includes="date.js" />
+			<fileset dir="${src.js.dir}" includes="time.js" />
 		</concat>
 		<replaceregexp match="@VERSION" replace="${version}" flags="g" byline="true" file="${JMC}" />
 		<echo message="${JMC} built." />
@@ -86,7 +87,7 @@
 		
 		<copy todir="${release.folder}/js">
 			<fileset dir="${build.dir}" includes="*.js" />
-			<fileset dir="${src.js.dir}" excludes="jMonthCalendar.js, date.js" />
+			<fileset dir="${src.js.dir}" excludes="jMonthCalendar.js, date.js, time.js" />
 		</copy>
 		
 		<copy file="doc/Demo.html" todir="${release.folder}" />
