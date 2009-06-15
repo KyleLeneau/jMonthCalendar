@@ -7,7 +7,6 @@
 * Source:  http://code.google.com/p/jmonthcalendar
 *
 */
-
 (function($) {
 	var _beginDate;
 	var _endDate;
@@ -535,7 +534,7 @@
 	
 	jQuery.J.AddEvents = function(eventCollection) {
 		if(eventCollection) {
-			if(eventCollection.length > 1) {
+			if(eventCollection.length > 0) {
 				jQuery.merge(calendarEvents, eventCollection);
 			} else {
 				calendarEvents.push(eventCollection);
@@ -567,7 +566,10 @@
 		
 		options = jQuery.extend(defaults, options);
 		
-		if (events) { calendarEvents = events; }
+		if (events) { 
+			jQuery.J.ClearEventsOnCalendar();
+			calendarEvents = events;
+		}
 		
 		jQuery.J.DrawCalendar();
 	};
