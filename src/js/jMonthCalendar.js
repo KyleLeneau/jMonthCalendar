@@ -294,11 +294,11 @@
 			
 			//DateBox Events
 			var dateLink = jQuery('<div class="DateLabel"><a href="">' + currentDate.getDate() + '</a></div>');
-			dateLink.bind('click', { Date: currentDate }, def.onDayLinkClick);
+			dateLink.bind('click', { Date: currentDate.clone() }, def.onDayLinkClick);
 			
 			var dateBox = jQuery("<td></td>").attr(atts).append(dateLink);
-			dateBox.bind('dblclick', { Date: currentDate }, def.onDayCellDblClick);
-			dateBox.bind('click', { Date: currentDate }, def.onDayCellClick);
+			dateBox.bind('dblclick', { Date: currentDate.clone() }, def.onDayCellDblClick);
+			dateBox.bind('click', { Date: currentDate.clone() }, def.onDayCellClick);
 			
 			if (def.dragableEvents) {
 				dateBox.droppable({
