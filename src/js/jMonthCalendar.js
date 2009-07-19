@@ -459,7 +459,12 @@
 			_dragableEvent(ev, block, weekNumber);
 		}
 		
-		var link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
+		var link;
+		if (event.URL && event.URL.length > 0) {
+			link = jQuery('<a href="' + event.URL + '">' + event.Title + '</a>');
+		} else {
+			link = jQuery('<a>' + event.Title + '</a>');
+		}
 		link.bind('click', { Event: ev }, def.onEventLinkClick);
 		
 		block.append(link);
