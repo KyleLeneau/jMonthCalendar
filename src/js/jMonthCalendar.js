@@ -180,14 +180,14 @@
 	var _initHeaders = function() {
 		// Create Previous Month link for later
 		var prevMonth = _workingDate.clone().addMonths(-1);
-		var prevMLink = jQuery('<div class="MonthNavPrev"><a href="" class="link-prev">'+ def.navLinks.p +'</a></div>').click(function() {
+		var prevMLink = jQuery('<div class="MonthNavPrev"><a class="link-prev">'+ def.navLinks.p +'</a></div>').click(function() {
 			jQuery.J.ChangeMonth(prevMonth);
 			return false;
 		});
 		
 		//Create Next Month link for later
 		var nextMonth = _workingDate.clone().addMonths(1);
-		var nextMLink = jQuery('<div class="MonthNavNext"><a href="" class="link-next">'+ def.navLinks.n +'</a></div>').click(function() {
+		var nextMLink = jQuery('<div class="MonthNavNext"><a class="link-next">'+ def.navLinks.n +'</a></div>').click(function() {
 			jQuery.J.ChangeMonth(nextMonth);
 			return false;
 		});
@@ -196,7 +196,7 @@
 		var prevYear = _workingDate.clone().addYears(-1);
 		var prevYLink;
 		if(def.navLinks.enablePrevYear) {
-			prevYLink = jQuery('<div class="YearNavPrev"><a href="">'+ prevYear.getFullYear() +'</a></div>').click(function() {
+			prevYLink = jQuery('<div class="YearNavPrev"><a>'+ prevYear.getFullYear() +'</a></div>').click(function() {
 				jQuery.J.ChangeMonth(prevYear);
 				return false;
 			});
@@ -206,7 +206,7 @@
 		var nextYear = _workingDate.clone().addYears(1);
 		var nextYLink;
 		if(def.navLinks.enableNextYear) {
-			nextYLink = jQuery('<div class="YearNavNext"><a href="">'+ nextYear.getFullYear() +'</a></div>').click(function() {
+			nextYLink = jQuery('<div class="YearNavNext"><a>'+ nextYear.getFullYear() +'</a></div>').click(function() {
 				jQuery.J.ChangeMonth(nextYear);
 				return false;
 			});
@@ -215,7 +215,7 @@
 		var todayLink;
 		if(def.navLinks.enableToday) {
 			//Create Today link for later
-			todayLink = jQuery('<div class="TodayLink"><a href="" class="link-today">'+ def.navLinks.t +'</a></div>').click(function() {
+			todayLink = jQuery('<div class="TodayLink"><a class="link-today">'+ def.navLinks.t +'</a></div>').click(function() {
 				jQuery.J.ChangeMonth(new Date());
 				return false;
 			});
@@ -293,7 +293,7 @@
 			}
 			
 			//DateBox Events
-			var dateLink = jQuery('<div class="DateLabel"><a href="">' + currentDate.getDate() + '</a></div>');
+			var dateLink = jQuery('<div class="DateLabel"><a>' + currentDate.getDate() + '</a></div>');
 			dateLink.bind('click', { Date: currentDate.clone() }, def.onDayLinkClick);
 			
 			var dateBox = jQuery("<td></td>").attr(atts).append(dateLink);

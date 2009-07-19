@@ -5,6 +5,8 @@
 a 
 {
 	font-size:11px;
+	text-decoration:underline;
+	cursor:pointer;
 }
 
 #jMonthCalendar 
