@@ -4,7 +4,7 @@
 * Author:  Kyle LeNeau
 * Email:  kyle.leneau@gmail.com
 * Project Hompage:  http://www.bytecyclist.com/projects/jmonthcalendar
-* Source:  http://code.google.com/p/jmonthcalendar
+* Source:  http://github.com/KyleLeneau/jMonthCalendar
 *
 */
 (function($) {
@@ -460,10 +460,10 @@
 		}
 		
 		var link;
-		if (event.URL && event.URL.length > 0) {
-			link = jQuery('<a href="' + event.URL + '">' + event.Title + '</a>');
+		if (ev.URL && ev.URL.length > 0) {
+			link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
 		} else {
-			link = jQuery('<a>' + event.Title + '</a>');
+			link = jQuery('<a>' + ev.Title + '</a>');
 		}
 		link.bind('click', { Event: ev }, def.onEventLinkClick);
 		
