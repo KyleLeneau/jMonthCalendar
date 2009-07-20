@@ -1,11 +1,16 @@
-Multiday event cases:
-	1. Event spans a week (sunday to saturday), start of week is variable
-	2. Event spans a month (may to june), part of event not visible. 
-		A. Event start in the prior month (currently event is displayed if start date is between the visble dates, wont work, need to change).
-		B. Event starts in current month but caries over to next month.
-	3. Event stacking for more than one event on a given day (multi day events rendered first, then single, how about in order of time?)
-	4. Drag and Drop of multiday events
+Documentaion!!!
+	1. Need samples on how to get started.
+	2. Need examples of loading in events.
+	3. Need samples of event delegation.
+	4. Need sample on chaning months and adding new events on the fly.
+	5. Need sample of how to "show more" events on a day.
+	6. Need sample of using tool tip plugins for details.
+	7. Need sample on ways to contribute to jMonthCalendar (Git)
+	8. Need docs on build system and how to build.
+
+Forum
+	Place for users to ask questions.
 	
-	3. More events than visible, when and how to position and how to display "more" (popup, qTip?)
-	
+Feature Breakdown
+	Need to provide a list of features and how they break down.
 	

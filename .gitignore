@@ -1,0 +1,7 @@
+# Shamelessly stolen from http://gist.github.com/114476
+ 
+Thumbs.db
+ 
+# If you have a deploy folder
+build
+build/*

@@ -1,5 +1,8 @@
 ##### Change Log #####
-* Current
+* 1.3.1
+	- FIXED link generation on event blocks.
+	- FIXED wrong date passed when double clikc or day link click.
+* 1.3.0
       - Dynamic ID for calendar, now in defaults.
       - Absolute position events, calendar size flexible (CSS)
 * 1.2.2
