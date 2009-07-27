@@ -93,7 +93,7 @@
 				return eval('(' + dateStr + ')');
 			}
 			
-			return tdt;
+			return tDt;
 		}
 	};
 	
