@@ -41,20 +41,20 @@
 				t:'Today',
 				showMore: 'Show More'
 			},
-			onMonthChanging: function(dateIn) { return true; },
-			onMonthChanged: function(dateIn) { return true; },
-			onEventLinkClick: function() { },
-			onEventBlockClick: function() { },
-			onEventBlockOver: function() { },
-			onEventBlockOut: function() { },
-			onDayLinkClick: function() { },
-			onDayCellClick: function() { },
-			onDayCellDblClick: function() { },
-			onEventDropped: function(event, newDate) { return true; },
-			onShowMoreClick: function(eventArray) { return true; }
+			onMonthChanging: function() {},
+			onMonthChanged: function() {},
+			onEventLinkClick: function() {},
+			onEventBlockClick: function() {},
+			onEventBlockOver: function() {},
+			onEventBlockOut: function() {},
+			onDayLinkClick: function() {},
+			onDayCellClick: function() {},
+			onDayCellDblClick: function() {},
+			onEventDropped: function() {},
+			onShowMoreClick: function() {}
 		};
 		
-	jQuery.jMonthCalendar = jQuery.J = function() {};
+	$.jMonthCalendar = $.J = function() {};
 	
 	var _getJSONDate = function(dateStr) {
 		//check conditions for different types of accepted dates
@@ -104,7 +104,7 @@
 			var single = [];
 			
 			//Update and parse all the dates
-			jQuery.each(cEvents, function(){
+			$.each(cEvents, function(){
 				var ev = this;
 				//Date Parse the JSON to create a new Date to work with here				
 				if(ev.StartDateTime) {
@@ -134,8 +134,8 @@
 			multi.sort(_eventSort);
 			single.sort(_eventSort);
 			cEvents = [];
-			jQuery.merge(cEvents, multi);
-			jQuery.merge(cEvents, single);
+			$.merge(cEvents, multi);
+			$.merge(cEvents, single);
 		}
 	};
 	
@@ -180,15 +180,15 @@
 	var _initHeaders = function() {
 		// Create Previous Month link for later
 		var prevMonth = _workingDate.clone().addMonths(-1);
-		var prevMLink = jQuery('<div class="MonthNavPrev"><a class="link-prev">'+ def.navLinks.p +'</a></div>').click(function() {
-			jQuery.J.ChangeMonth(prevMonth);
+		var prevMLink = $('<div class="MonthNavPrev"><a class="link-prev">'+ def.navLinks.p +'</a></div>').click(function() {
+			$.J.ChangeMonth(prevMonth);
 			return false;
 		});
 		
 		//Create Next Month link for later
 		var nextMonth = _workingDate.clone().addMonths(1);
-		var nextMLink = jQuery('<div class="MonthNavNext"><a class="link-next">'+ def.navLinks.n +'</a></div>').click(function() {
-			jQuery.J.ChangeMonth(nextMonth);
+		var nextMLink = $('<div class="MonthNavNext"><a class="link-next">'+ def.navLinks.n +'</a></div>').click(function() {
+			$.J.ChangeMonth(nextMonth);
 			return false;
 		});
 		
@@ -196,8 +196,8 @@
 		var prevYear = _workingDate.clone().addYears(-1);
 		var prevYLink;
 		if(def.navLinks.enablePrevYear) {
-			prevYLink = jQuery('<div class="YearNavPrev"><a>'+ prevYear.getFullYear() +'</a></div>').click(function() {
-				jQuery.J.ChangeMonth(prevYear);
+			prevYLink = $('<div class="YearNavPrev"><a>'+ prevYear.getFullYear() +'</a></div>').click(function() {
+				$.J.ChangeMonth(prevYear);
 				return false;
 			});
 		}
@@ -206,8 +206,8 @@
 		var nextYear = _workingDate.clone().addYears(1);
 		var nextYLink;
 		if(def.navLinks.enableNextYear) {
-			nextYLink = jQuery('<div class="YearNavNext"><a>'+ nextYear.getFullYear() +'</a></div>').click(function() {
-				jQuery.J.ChangeMonth(nextYear);
+			nextYLink = $('<div class="YearNavNext"><a>'+ nextYear.getFullYear() +'</a></div>').click(function() {
+				$.J.ChangeMonth(nextYear);
 				return false;
 			});
 		}
@@ -215,41 +215,41 @@
 		var todayLink;
 		if(def.navLinks.enableToday) {
 			//Create Today link for later
-			todayLink = jQuery('<div class="TodayLink"><a class="link-today">'+ def.navLinks.t +'</a></div>').click(function() {
-				jQuery.J.ChangeMonth(new Date());
+			todayLink = $('<div class="TodayLink"><a class="link-today">'+ def.navLinks.t +'</a></div>').click(function() {
+				$.J.ChangeMonth(new Date());
 				return false;
 			});
 		}
 
 		//Build up the Header first,  Navigation
-		var navRow = jQuery('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>');
-		var navHead = jQuery('.MonthNavigation', navRow);
+		var navRow = $('<tr><td colspan="7"><div class="FormHeader MonthNavigation"></div></td></tr>');
+		var navHead = $('.MonthNavigation', navRow);
 		
 		navHead.append(prevMLink, nextMLink);
 		if(def.navLinks.enableToday) { navHead.append(todayLink); }
 
-		navHead.append(jQuery('<div class="MonthName"></div>').append(Date.CultureInfo.monthNames[_workingDate.getMonth()] + " " + _workingDate.getFullYear()));
+		navHead.append($('<div class="MonthName"></div>').append(Date.CultureInfo.monthNames[_workingDate.getMonth()] + " " + _workingDate.getFullYear()));
 		
 		if(def.navLinks.enablePrevYear) { navHead.append(prevYLink); }
 		if(def.navLinks.enableNextYear) { navHead.append(nextYLink); }
 		
 		
 		//  Days
-		var headRow = jQuery("<tr></tr>");		
+		var headRow = $("<tr></tr>");		
 		for (var i = def.firstDayOfWeek; i < def.firstDayOfWeek+7; i++) {
 			var weekday = i % 7;
 			var wordday = Date.CultureInfo.dayNames[weekday];
 			headRow.append('<th title="' + wordday + '" class="DateHeader' + (weekday == 0 || weekday == 6 ? ' Weekend' : '') + '"><span>' + wordday + '</span></th>');
 		}
 		
-		headRow = jQuery("<thead id=\"CalendarHead\"></thead>").css({ "height" : def.headerHeight + "px" }).append(headRow);
+		headRow = $("<thead id=\"CalendarHead\"></thead>").css({ "height" : def.headerHeight + "px" }).append(headRow);
 		headRow = headRow.prepend(navRow);
 		return headRow;
 	};
 	
 	
 	
-	jQuery.J.DrawCalendar = function(dateIn){
+	$.J.DrawCalendar = function(dateIn){
 		var now = new Date();
 		now.clearTime();
 		
@@ -262,17 +262,17 @@
 		
 		//properties
 		var isCurrentMonth = (_workingDate.getMonth() == today.getMonth() && _workingDate.getFullYear() == today.getFullYear());
-		var containerHeight = jQuery(def.containerId).outerHeight();
+		var containerHeight = $(def.containerId).outerHeight();
 		var rowHeight = (containerHeight - def.headerHeight) / _gridRows;
 		var row = null;
 
 		//Build up the Body
-		var tBody = jQuery('<tbody id="CalendarBody"></tbody>');
+		var tBody = $('<tbody id="CalendarBody"></tbody>');
 		
 		for (var i = 0; i < _totalBoxes; i++) {
 			var currentDate = _dateRange.startDate.clone().addDays(i);
 			if (i % 7 == 0 || i == 0) {
-				row = jQuery("<tr></tr>");
+				row = $("<tr></tr>");
 				row.css({ "height" : rowHeight + "px" });
 				tBody.append(row);
 			}
@@ -293,10 +293,10 @@
 			}
 			
 			//DateBox Events
-			var dateLink = jQuery('<div class="DateLabel"><a>' + currentDate.getDate() + '</a></div>');
+			var dateLink = $('<div class="DateLabel"><a>' + currentDate.getDate() + '</a></div>');
 			dateLink.bind('click', { Date: currentDate.clone() }, def.onDayLinkClick);
 			
-			var dateBox = jQuery("<td></td>").attr(atts).append(dateLink);
+			var dateBox = $("<td></td>").attr(atts).append(dateLink);
 			dateBox.bind('dblclick', { Date: currentDate.clone() }, def.onDayCellDblClick);
 			dateBox.bind('click', { Date: currentDate.clone() }, def.onDayCellClick);
 			
@@ -306,10 +306,10 @@
 					tolerance: 'pointer',
 					drop: function(ev, ui) {
 						var eventId = ui.draggable.attr("eventid")
-						var newDate = new Date(jQuery(this).attr("date")).clearTime();
+						var newDate = new Date($(this).attr("date")).clearTime();
 						
 						var event;
-						jQuery.each(cEvents, function() {
+						$.each(cEvents, function() {
 							if (this.EventID == eventId) {
 								var days = new TimeSpan(newDate - this.StartDateTime).days;
 								
@@ -320,10 +320,10 @@
 							}
 						});
 						
-						jQuery.J.ClearEventsOnCalendar();
+						$.J.ClearEventsOnCalendar();
 						_drawEventsOnCalendar();
 						
-						def.onEventDropped(event, newDate);
+						def.onEventDropped.call(this, event, newDate);
 					}
 				});
 			}
@@ -333,8 +333,8 @@
 		}
 		tBody.append(row);
 
-		var a = jQuery(def.containerId);
-		var cal = jQuery('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>').append(headerRow, tBody);
+		var a = $(def.containerId);
+		var cal = $('<table class="MonthlyCalendar" cellpadding="0" tablespacing="0"></table>').append(headerRow, tBody);
 		
 		a.hide();
 		a.html(cal);
@@ -349,9 +349,9 @@
 		_clearBoxEvents();
 		
 		if (cEvents && cEvents.length > 0) {
-			var container = jQuery(def.containerId);			
+			var container = $(def.containerId);			
 			
-			jQuery.each(cEvents, function(){
+			$.each(cEvents, function(){
 				var ev = this;
 				//alert("eventID: " + ev.EventID + ", start: " + ev.StartDateTime + ",end: " + ev.EndDateTime);
 				
@@ -383,7 +383,7 @@
 					
 					if (toManyEvents) {
 						if (!b.isTooManySet) {
-							var moreDiv = jQuery('<div class="MoreEvents" id="ME_' + i + '">' + def.navLinks.showMore + '</div>');
+							var moreDiv = $('<div class="MoreEvents" id="ME_' + i + '">' + def.navLinks.showMore + '</div>');
 							var pos = b.getCellPosition();
 							var index = i;
 
@@ -412,10 +412,10 @@
 						b.vOffset += 19;
 						
 						if (continueEvent) {
-							block.prepend(jQuery('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-w"));
+							block.prepend($('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-w"));
 							
 							var e = _eventObj['Event_' + ev.EventID + '_' + (b.weekNumber - 1)];
-							if (e) { e.prepend(jQuery('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-e")); }
+							if (e) { e.prepend($('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-e")); }
 						}
 						
 						_eventObj[block.attr("id")] = block;
@@ -434,7 +434,7 @@
 					//end of month continue
 					if (i == iend && endBoxCompare > 0) {
 						var e = _eventObj['Event_' + ev.EventID + '_' + b.weekNumber];
-						if (e) { e.prepend(jQuery('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-e")); }
+						if (e) { e.prepend($('<span />').addClass("ui-icon").addClass("ui-icon-triangle-1-e")); }
 					}
 				}
 			});
@@ -448,7 +448,7 @@
 	}
 	
 	var _buildEventBlock = function(ev, weekNumber) {
-		var block = jQuery('<div class="Event" id="Event_' + ev.EventID + '_' + weekNumber + '" eventid="' + ev.EventID +'"></div>');
+		var block = $('<div class="Event" id="Event_' + ev.EventID + '_' + weekNumber + '" eventid="' + ev.EventID +'"></div>');
 		
 		if(ev.CssClass) { block.addClass(ev.CssClass) }
 		block.bind('click', { Event: ev }, def.onEventBlockClick);
@@ -461,9 +461,9 @@
 		
 		var link;
 		if (ev.URL && ev.URL.length > 0) {
-			link = jQuery('<a href="' + ev.URL + '">' + ev.Title + '</a>');
+			link = $('<a href="' + ev.URL + '">' + ev.Title + '</a>');
 		} else {
-			link = jQuery('<a>' + ev.Title + '</a>');
+			link = $('<a>' + ev.Title + '</a>');
 		}
 		link.bind('click', { Event: ev }, def.onEventLinkClick);
 		
@@ -495,58 +495,59 @@
 	
 	var _showMoreClick = function(e, boxIndex) {
 		var box = _boxes[boxIndex];
-		def.onShowMoreClick(box.events);
+		def.onShowMoreClick.call(this, box.events);
 		
 		e.stopPropagation();
 	}
 	
 	
-	jQuery.J.ClearEventsOnCalendar = function() {
+	$.J.ClearEventsOnCalendar = function() {
 		_clearBoxEvents();
-		jQuery(".Event", jQuery(def.containerId)).remove();
-		jQuery(".MoreEvents", jQuery(def.containerId)).remove();
+		$(".Event", $(def.containerId)).remove();
+		$(".MoreEvents", $(def.containerId)).remove();
 	}
 	
-	jQuery.J.AddEvents = function(eventCollection) {
+	$.J.AddEvents = function(eventCollection) {
 		if(eventCollection) {
 			if(eventCollection.length > 0) {
-				jQuery.merge(cEvents, eventCollection);
+				$.merge(cEvents, eventCollection);
 			} else {
 				cEvents.push(eventCollection);
 			}
-			jQuery.J.ClearEventsOnCalendar();
+			$.J.ClearEventsOnCalendar();
 			_drawEventsOnCalendar();
 		}
 	}
 	
-	jQuery.J.ReplaceEventCollection = function(eventCollection) {
+	$.J.ReplaceEventCollection = function(eventCollection) {
 		if(eventCollection) {
 			cEvents = []
 			cEvents = eventCollection;
 		}
 		
-		jQuery.J.ClearEventsOnCalendar();
+		$.J.ClearEventsOnCalendar();
 		_drawEventsOnCalendar();
 	}
 	
-	jQuery.J.ChangeMonth = function(dateIn) {	
-		if (def.onMonthChanging(dateIn)) {
-			jQuery.J.DrawCalendar(dateIn);
-			def.onMonthChanged(dateIn);
+	$.J.ChangeMonth = function(dateIn) {
+		var returned = def.onMonthChanging.call(this, dateIn);
+		if (!returned) {
+			$.J.DrawCalendar(dateIn);
+			def.onMonthChanged.call(this, dateIn);
 		}
 	}
 	
-	jQuery.J.Initialize = function(options, events) {
+	$.J.Initialize = function(options, events) {
 		var today = new Date();
 		
-		options = jQuery.extend(def, options);
+		options = $.extend(def, options);
 		
 		if (events) { 
-			jQuery.J.ClearEventsOnCalendar();
+			$.J.ClearEventsOnCalendar();
 			cEvents = events;
 		}
 		
-		jQuery.J.DrawCalendar();
+		$.J.DrawCalendar();
 	};
 })(jQuery);
 
