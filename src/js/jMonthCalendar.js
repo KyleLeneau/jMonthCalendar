@@ -173,7 +173,6 @@
 		_totalBoxes = _gridRows * 7;
 		
 		_dateRange.startDate = _firstOfMonth.clone().addDays((-1) * _gridOffset);
-		
 		_dateRange.endDate = _lastOfMonth.clone().addDays(_totalBoxes - (_daysInMonth + _gridOffset));
 	};
 	
@@ -465,10 +464,9 @@
 		} else {
 			link = $('<a>' + ev.Title + '</a>');
 		}
+		
 		link.bind('click', { Event: ev }, def.onEventLinkClick);
-		
 		block.append(link);
-		
 		return block;
 	}	
 
@@ -496,7 +494,6 @@
 	var _showMoreClick = function(e, boxIndex) {
 		var box = _boxes[boxIndex];
 		def.onShowMoreClick.call(this, box.events);
-		
 		e.stopPropagation();
 	}
 	
@@ -549,58 +546,58 @@
 		
 		$.J.DrawCalendar();
 	};
-})(jQuery);
-
-
-function CalendarBox(id, boxDate, cell, label) {
-	this.id = id;
-	this.date = boxDate;
-	this.cell = cell;
-	this.label = label;
-	this.weekNumber = Math.floor(id / 7);
-	this.events= [];
-	this.isTooMannySet = false;
-	this.vOffset = 0;
 	
-	this.echo = function() {
-		alert("Date: " + this.date + " WeekNumber: " + this.weekNumber + " ID: " + this.id);
-	}
 	
-	this.clear = function() {
-		this.events = [];
+	function CalendarBox(id, boxDate, cell, label) {
+		this.id = id;
+		this.date = boxDate;
+		this.cell = cell;
+		this.label = label;
+		this.weekNumber = Math.floor(id / 7);
+		this.events= [];
 		this.isTooMannySet = false;
 		this.vOffset = 0;
-	}
-	
-	this.getCellPosition = function() {
-		if (this.cell) { 
-			return this.cell.position();
+		
+		this.echo = function() {
+			alert("Date: " + this.date + " WeekNumber: " + this.weekNumber + " ID: " + this.id);
 		}
-		return;
-	}
-	
-	this.getCellBox = function() {
-		if (this.cell) { 
-			return this.cell;
+		
+		this.clear = function() {
+			this.events = [];
+			this.isTooMannySet = false;
+			this.vOffset = 0;
 		}
-		return;
-	}
-	
-	this.getLabelWidth = function() {
-		if (this.label) {
-			return this.label.innerWidth();
+		
+		this.getCellPosition = function() {
+			if (this.cell) { 
+				return this.cell.position();
+			}
+			return;
 		}
-		return;
-	}
-	
-	this.getLabelHeight = function() {
-		if (this.label) { 
-			return this.label.height();
+		
+		this.getCellBox = function() {
+			if (this.cell) { 
+				return this.cell;
+			}
+			return;
 		}
-		return;
+		
+		this.getLabelWidth = function() {
+			if (this.label) {
+				return this.label.innerWidth();
+			}
+			return;
+		}
+		
+		this.getLabelHeight = function() {
+			if (this.label) { 
+				return this.label.height();
+			}
+			return;
+		}
+		
+		this.getDate = function() {
+			return this.date;
+		}
 	}
-	
-	this.getDate = function() {
-		return this.date;
-	}
-}
+})(jQuery);
